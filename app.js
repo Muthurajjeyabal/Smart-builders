@@ -9,6 +9,42 @@ const MATERIALS = [
 const WORK_TYPES = ["Mason", "Helper", "Electrician", "Plumber", "Carpenter", "Painter", "Other"];
 const PAY_MODES = ["Cash", "UPI", "Bank", "Cheque"];
 
+function defaultSpecs() {
+  return [
+    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Cement", val: "53 Grade — Ramco / Sankar" },
+    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Steel (TMT)", val: "Fe550 — Agni / Tata Tiscon" },
+    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Brick / Block", val: "Chamber brick / Fly ash block" },
+    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "RCC mix", val: "M20 — as per drawing" },
+    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Sand", val: "M-sand + river sand mix" },
+    { cat: "கதவு", item: "Main door", val: "Teak wood / Steel security door" },
+    { cat: "கதவு", item: "Inner doors", val: "Flush door / Membrane" },
+    { cat: "கதவு", item: "Bathroom door", val: "PVC door" },
+    { cat: "கதவு", item: "Door lock", val: "Godrej / equivalent" },
+    { cat: "ஜன்னல்", item: "Windows", val: "Aluminium sliding / UPVC" },
+    { cat: "ஜன்னல்", item: "Grills", val: "MS square bar grill" },
+    { cat: "எலக்ட்ரிகல்", item: "Wire", val: "Finolex / Havells — 1.0, 1.5, 2.5, 4 sq.mm" },
+    { cat: "எலக்ட்ரிகல்", item: "Switches", val: "Anchor Roma / Legrand" },
+    { cat: "எலக்ட்ரிகல்", item: "DB + MCB", val: "Standard single phase DB" },
+    { cat: "எலக்ட்ரிகல்", item: "Fan / light points", val: "Hall, bed, kitchen — standard points" },
+    { cat: "ப்ளம்பிங்", item: "Inner pipe", val: "CPVC — Ashirvad / Supreme" },
+    { cat: "ப்ளம்பிங்", item: "Outer / drainage", val: "PVC 4 inch" },
+    { cat: "ப்ளம்பிங்", item: "Taps / CP fittings", val: "Watertec / Jaguar equivalent" },
+    { cat: "ப்ளம்பிங்", item: "Overhead tank", val: "1000 L PVC" },
+    { cat: "ப்ளம்பிங்", item: "Sump", val: "As per site — RCC" },
+    { cat: "ஃப்ளோரிங்", item: "Hall / Bedroom tiles", val: "Vitrified 2x2" },
+    { cat: "ஃப்ளோரிங்", item: "Bathroom tiles", val: "Anti-skid + wall tiles 8 ft" },
+    { cat: "ஃப்ளோரிங்", item: "Parking / sitout", val: "Parking tiles" },
+    { cat: "கிச்சன்", item: "Kitchen slab", val: "Granite 20mm" },
+    { cat: "கிச்சன்", item: "Sink", val: "SS single bowl" },
+    { cat: "சானிட்டரி", item: "WC / wash basin", val: "Parryware / Cera equivalent" },
+    { cat: "பெயிண்ட்", item: "Inner paint", val: "2 coat putty + emulsion" },
+    { cat: "பெயிண்ட்", item: "Outer paint", val: "Ace / Apex weather coat" },
+    { cat: "மரம் / வேறு", item: "Loft / cupboard framing", val: "Sal wood / country wood" },
+    { cat: "மரம் / வேறு", item: "Staircase railing", val: "SS / MS as selected" },
+    { cat: "மரம் / வேறு", item: "Compound / gate", val: "Extra — quote separately" }
+  ];
+}
+
 const DEFAULT_USERS = [
   { phone: "9876543210", pin: "1234", name: "Engineer Ravi", tenantId: "t_ravi" }
 ];
@@ -21,6 +57,7 @@ function seedTenant() {
     firmName: "Ravi Civil Works",
     ownerName: "Engineer Ravi",
     phone: "9876543210",
+    address: "12, 2nd Street, Anna Nagar, Chennai",
     projects: [
       {
         id: p1, name: "3BHK House", location: "Anna Nagar",
@@ -654,6 +691,200 @@ function resetDemo() {
   toast("Demo reset");
 }
 
+function getSpecs() {
+  const t = currentTenant();
+  if (!t.specs || !t.specs.length) t.specs = defaultSpecs();
+  return t.specs;
+}
+function renderSpecEditor() {
+  const box = document.getElementById("spec-editor");
+  if (!box) return;
+  const specs = getSpecs();
+  let last = "";
+  box.innerHTML = specs.map((s, i) => {
+    const head = s.cat !== last ? `<div class="label" style="margin:10px 0 4px">${s.cat}</div>` : "";
+    last = s.cat;
+    return `${head}<div class="item" style="padding:8px">
+      <div class="row"><strong>${s.item}</strong>
+        <button class="chip" onclick="removeSpec(${i})">×</button></div>
+      <input data-spec="${i}" value="${String(s.val).replace(/"/g, "&quot;")}" />
+    </div>`;
+  }).join("");
+  box.querySelectorAll("input[data-spec]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const i = Number(inp.getAttribute("data-spec"));
+      getSpecs()[i].val = inp.value;
+      persist();
+      renderQuotePreview();
+    });
+  });
+}
+function addSpecLine() {
+  const item = (document.getElementById("spec-new-item").value || "").trim();
+  const val = (document.getElementById("spec-new-val").value || "").trim();
+  if (!item) { toast("Item பெயர் போடவும்"); return; }
+  getSpecs().push({ cat: "கூடுதல்", item, val: val || "-" });
+  document.getElementById("spec-new-item").value = "";
+  document.getElementById("spec-new-val").value = "";
+  persist();
+  renderSpecEditor();
+  renderQuotePreview();
+}
+function removeSpec(i) {
+  getSpecs().splice(i, 1);
+  persist();
+  renderSpecEditor();
+  renderQuotePreview();
+}
+function specWhatsAppBlock() {
+  const specs = getSpecs();
+  const lines = ["", "*SPECIFICATION*", "────────────────"];
+  let last = "";
+  specs.forEach(s => {
+    if (s.cat !== last) {
+      lines.push("");
+      lines.push("*" + s.cat + "*");
+      last = s.cat;
+    }
+    lines.push("• " + s.item + ": " + s.val);
+  });
+  return lines.join("\n");
+}
+function quoteDraft() {
+  return {
+    sqftRate: numVal(document.getElementById("q-rate")),
+    houseSqft: numVal(document.getElementById("q-house")),
+    stairSqft: numVal(document.getElementById("q-stair")),
+    stairHalf: (document.getElementById("q-stair-mode") || {}).value === "half",
+    sharedSqft: numVal(document.getElementById("q-shared"))
+  };
+}
+function quoteText() {
+  const t = currentTenant();
+  const s = sqftCalc(quoteDraft());
+  const cust = (document.getElementById("q-cust").value || "").trim() || "Customer";
+  const site = (document.getElementById("q-site").value || "").trim() || "-";
+  const firm = (document.getElementById("q-firm").value || t.firmName || "").trim();
+  const phone = (document.getElementById("q-builder-phone").value || t.phone || "").trim();
+  const addr = (document.getElementById("q-builder-addr").value || t.address || "").trim();
+  const lines = [];
+  lines.push("🏗️ *CONSTRUCTION QUOTATION*");
+  lines.push("────────────────");
+  lines.push("*" + firm + "*");
+  if (t.ownerName) lines.push(t.ownerName);
+  if (phone) lines.push("📞 " + phone);
+  if (addr) lines.push("📍 " + addr);
+  lines.push("────────────────");
+  lines.push("To: *" + cust + "*");
+  lines.push("Site: " + site);
+  lines.push("");
+  if (s.stairHalf) {
+    lines.push("வீடு: " + s.house + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
+    if (s.stair > 0) lines.push("Staircase (பாதி): " + s.stair + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.stairAmt));
+  } else {
+    lines.push("வீடு + staircase: " + s.houseSqft + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
+  }
+  if (s.shared > 0) lines.push("Shared (பாதி): " + s.shared + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.sharedAmt));
+  lines.push("Billable: *" + s.billSqft.toLocaleString("en-IN") + " sq.ft*");
+  lines.push("────────────────");
+  lines.push("*எஸ்டிமேட்: " + INR(s.total) + "*");
+  lines.push(specWhatsAppBlock());
+  lines.push("");
+  lines.push("மேற்கண்ட specification இந்த ரேட்டில் அடங்கும்.");
+  lines.push("Compound, extra loft, extra points — தனியாக.");
+  lines.push("இந்த quote 15 நாட்களுக்கு செல்லும்.");
+  lines.push("நன்றி.");
+  return { s, cust, site, firm, phone, addr, text: lines.join("\n") };
+}
+function renderQuotePreview() {
+  const q = quoteText();
+  const el = document.getElementById("quote-preview");
+  if (!el) return q;
+  const s = q.s;
+  let body = "";
+  if (s.stairHalf) {
+    body += `<div class="row"><span>வீடு ${s.house} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
+    if (s.stair > 0) body += `<div class="row"><span>Staircase பாதி ${s.stair} sq.ft</span><span>${INR(s.stairAmt)}</span></div>`;
+  } else {
+    body += `<div class="row"><span>வீடு + staircase ${s.houseSqft} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
+  }
+  if (s.shared > 0) body += `<div class="row"><span>Shared பாதி ${s.shared} sq.ft</span><span>${INR(s.sharedAmt)}</span></div>`;
+  el.innerHTML = `
+    <div class="tiny">QUOTATION</div>
+    <h3>${q.firm || "Builder"}</h3>
+    <div class="q-firm">${q.phone ? "📞 " + q.phone : ""} ${q.addr ? "<br>📍 " + q.addr : ""}</div>
+    <div class="q-line"></div>
+    <div class="row"><span>To</span><strong>${q.cust}</strong></div>
+    <div class="row"><span>Site</span><span>${q.site}</span></div>
+    <div class="q-line"></div>
+    ${body}
+    <div class="row"><span>Billable</span><strong>${s.billSqft.toLocaleString("en-IN")} sq.ft</strong></div>
+    <div class="q-line"></div>
+    <div class="row"><span>எஸ்டிமேட்</span><strong>${INR(s.total)}</strong></div>
+    <div class="q-line"></div>
+    <div class="tiny">SPECIFICATION இந்த ரேட்டில் அடங்கும்</div>
+    ${getSpecs().map(sp => `<div class="row"><span>${sp.item}</span><span>${sp.val}</span></div>`).join("")}
+    <div class="tiny" style="margin-top:8px">15 நாட்கள் செல்லும் · WhatsApp-ல் முழு list போகும்</div>`;
+  return q;
+}
+function openQuote() {
+  const t = currentTenant();
+  document.getElementById("q-firm").value = t.firmName || "";
+  document.getElementById("q-builder-phone").value = t.phone || "";
+  document.getElementById("q-builder-addr").value = t.address || "";
+  renderSpecEditor();
+  renderQuotePreview();
+  show("page-quote");
+}
+function saveBuilder() {
+  const t = currentTenant();
+  t.firmName = document.getElementById("q-firm").value.trim() || t.firmName;
+  t.phone = document.getElementById("q-builder-phone").value.trim() || t.phone;
+  t.address = document.getElementById("q-builder-addr").value.trim();
+  document.getElementById("firm-label").textContent = t.firmName;
+  persist();
+  renderQuotePreview();
+  toast("பில்டர் விவரம் save");
+}
+function sendQuoteWA() {
+  const q = renderQuotePreview();
+  if (!q.s.total) { toast("ரேட் + sq.ft போடவும்"); return; }
+  saveBuilder();
+  let phone = (document.getElementById("q-cust-phone").value || "").replace(/\D/g, "");
+  if (phone.length === 10) phone = "91" + phone;
+  const url = (phone.length >= 12 ? "https://wa.me/" + phone : "https://wa.me/") +
+    "?text=" + encodeURIComponent(q.text);
+  window.open(url, "_blank");
+}
+function quoteToProject() {
+  const q = renderQuotePreview();
+  if (!q.s.total) { toast("முதலில் estimate போடவும்"); return; }
+  const t = currentTenant();
+  t.projects.push({
+    id: uid(),
+    name: q.site !== "-" ? q.site : q.cust,
+    location: q.site,
+    ownerName: q.cust,
+    ownerPhone: document.getElementById("q-cust-phone").value.trim(),
+    type: "contract",
+    sqftRate: q.s.rate,
+    houseSqft: q.s.house,
+    stairSqft: q.s.stair,
+    stairHalf: q.s.stairHalf,
+    sharedSqft: q.s.shared,
+    saleValue: q.s.total,
+    estimatedCost: q.s.total,
+    otherBudget: 0,
+    startDate: today(),
+    endDate: "",
+    floors: 2,
+    status: "running"
+  });
+  persist();
+  toast("Project ஆனது. கொட்டேஷன் தொகை எஸ்டிமேட்.");
+  renderHome();
+  show("page-home");
+}
 function logout() {
   session = null;
   renderLogin();
@@ -667,6 +898,7 @@ function bindNav() {
       if (b.dataset.page === "page-people") renderPeople();
       if (b.dataset.page === "page-more") renderMore();
       if (b.dataset.page === "page-home") renderHome();
+      if (b.dataset.page === "page-quote") openQuote();
       show(b.dataset.page);
     };
   });
@@ -691,12 +923,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   document.addEventListener("input", e => {
     if (e.target && ["np-rate", "np-house", "np-stair", "np-shared"].includes(e.target.id)) calcSqft();
+    if (e.target && ["q-rate", "q-house", "q-stair", "q-shared", "q-cust", "q-site", "q-firm", "q-builder-phone", "q-builder-addr"].includes(e.target.id)) renderQuotePreview();
   });
   document.addEventListener("change", e => {
     if (e.target && ["np-rate", "np-house", "np-stair", "np-shared", "np-stair-mode"].includes(e.target.id)) calcSqft();
+    if (e.target && e.target.id === "q-stair-mode") renderQuotePreview();
   });
   document.addEventListener("keyup", e => {
     if (e.target && ["np-rate", "np-house", "np-stair", "np-shared"].includes(e.target.id)) calcSqft();
+    if (e.target && String(e.target.id || "").startsWith("q-")) renderQuotePreview();
   });
   document.getElementById("login-form").onsubmit = e => {
     e.preventDefault();

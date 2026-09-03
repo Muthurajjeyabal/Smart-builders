@@ -39,6 +39,53 @@
       <div id="home-kpis" class="grid grid-2"></div>
       <h2 id="home-list-title">ஒவ்வொரு project-லும் வந்த பணம்</h2>
       <div id="project-list" class="list"></div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="openQuote()">கொட்டேஷன் அனுப்பு</button>
+    </section>
+
+    <section id="page-quote" class="page">
+      <button class="btn btn-ghost" onclick="renderHome(); show('page-home')">← Home</button>
+      <h1 style="margin-top:10px">கஸ்டமர் கொட்டேஷன்</h1>
+      <p class="sub">Project உருவாக்குவதற்கு முன் estimate-ஐ WhatsApp-ல் அனுப்பவும்.</p>
+
+      <h2>உங்கள் பில்டர் விவரம்</h2>
+      <div class="field"><label>Builders name</label><input id="q-firm" placeholder="Ravi Civil Works" /></div>
+      <div class="field"><label>Engineer / phone</label><input id="q-builder-phone" inputmode="numeric" placeholder="9876543210" /></div>
+      <div class="field"><label>Address</label><input id="q-builder-addr" placeholder="Office / site address" /></div>
+      <button class="btn btn-ghost" style="margin-bottom:12px" onclick="saveBuilder()">பில்டர் விவரம் save</button>
+
+      <h2>கஸ்டமர்</h2>
+      <div class="field"><label>கஸ்டமர் பெயர்</label><input id="q-cust" placeholder="Karthik" /></div>
+      <div class="field"><label>கஸ்டமர் WhatsApp எண்</label><input id="q-cust-phone" inputmode="numeric" placeholder="9000000001" /></div>
+      <div class="field"><label>வீடு / site முகவரி</label><input id="q-site" placeholder="Tambaram" /></div>
+
+      <h2>Sq.ft எஸ்டிமேட்</h2>
+      <div class="field"><label>1 sq.ft ரேட் ₹</label><input id="q-rate" type="number" placeholder="2500" /></div>
+      <div class="field"><label>வீடு — முழு sq.ft</label><input id="q-house" type="number" step="0.01" placeholder="1200" /></div>
+      <div class="grid grid-2">
+        <div class="field"><label>Staircase sq.ft</label><input id="q-stair" type="number" step="0.01" placeholder="80" /></div>
+        <div class="field"><label>Staircase</label>
+          <select id="q-stair-mode">
+            <option value="half">Shared — பாதி</option>
+            <option value="full">முழு ரேட் (வீட்டுடன்)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>Shared / common sq.ft</label><input id="q-shared" type="number" step="0.01" value="0" /></div>
+
+      <h2>Full site specification</h2>
+      <p class="tiny">கதவு, வயர், மரம், சிமெண்ட், ஸ்டீல் — மாற்றிக் கொள்ளலாம். WhatsApp quote-ல் எல்லாம் போகும்.</p>
+      <div id="spec-editor"></div>
+      <div class="grid grid-2" style="margin:8px 0">
+        <input id="spec-new-item" placeholder="புதிய item — Door lock" />
+        <input id="spec-new-val" placeholder="Godrej / Yale" />
+      </div>
+      <button class="btn btn-ghost" style="margin-bottom:12px" onclick="addSpecLine()">Spec சேர்</button>
+
+      <div id="quote-preview" class="quote-sheet" style="margin:12px 0"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="sendQuoteWA()">WhatsApp-ல் அனுப்பு</button>
+        <button class="btn btn-ghost" onclick="quoteToProject()">Project ஆக்கு</button>
+      </div>
     </section>
 
     <section id="page-project" class="page">
@@ -132,7 +179,8 @@
         <button class="btn btn-primary" onclick="exportCsv()">Excel/CSV</button>
         <button class="btn btn-ghost" onclick="exportJson()">JSON backup</button>
       </div>
-      <button class="btn btn-ghost" onclick="resetDemo()" style="margin-bottom:16px">Demo data reset</button>
+      <button class="btn btn-ghost" onclick="resetDemo()" style="margin-bottom:10px">Demo data reset</button>
+      <button class="btn btn-primary" style="margin-bottom:16px" onclick="openQuote()">கொட்டேஷன் அனுப்பு</button>
       <h2>புதிய project</h2>
       <p class="tiny" style="margin-bottom:8px">முதலில் வகை தேர்வு — கஸ்டமர் ஒப்பந்தமா, சொந்த வீடு விற்பனையா.</p>
       <div class="seg">
@@ -185,6 +233,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=8"></script>
 </body>
 </html>
