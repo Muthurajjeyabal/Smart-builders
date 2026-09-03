@@ -115,11 +115,14 @@
 
     <section id="page-expense" class="page">
       <h1>Daily expense</h1>
-      <p class="sub">Cement வாங்கினேன் → qty × rate → paid → Save. பாக்கி automatic.</p>
+      <p class="sub">லிஸ்டில் இல்லாவிட்டாலும் டைப் பண்ணுங்கள் — ஜன்னல் மரம், கதவு, வயர்.</p>
       <div class="field"><label>Project</label><select id="exp-project"></select></div>
       <div class="grid grid-2">
         <div class="field"><label>Date</label><input id="exp-date" type="date" /></div>
-        <div class="field"><label>Material</label><select id="exp-material"></select></div>
+        <div class="field"><label>Material / item</label>
+          <input id="exp-material" list="mat-list" placeholder="Cement அல்லது ஜன்னல் மரம்" />
+          <datalist id="mat-list"></datalist>
+        </div>
       </div>
       <div class="field"><label>Supplier</label><input id="exp-supplier" placeholder="ABC Cement Supplier" /></div>
       <div class="grid grid-2">
@@ -246,6 +249,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=17"></script>
 </body>
 </html>

@@ -3,8 +3,10 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 const today = () => new Date().toISOString().slice(0, 10);
 
 const MATERIALS = [
-  "Cement", "Sand", "Steel", "Bricks/Blocks", "Plumbing",
-  "Electrical", "Paint", "Tiles", "Transport", "Machinery", "Miscellaneous"
+  "Cement", "Sand", "Steel", "Bricks/Blocks", "Wood / மரம்",
+  "Window / ஜன்னல்", "Door / கதவு", "Grill", "Plumbing",
+  "Electrical", "Wire / வயர்", "Paint", "Tiles",
+  "Transport", "Machinery", "Miscellaneous"
 ];
 const WORK_TYPES = ["Mason", "Helper", "Electrician", "Plumber", "Carpenter", "Painter", "Other"];
 const PAY_MODES = ["Cash", "UPI", "Bank", "Cheque"];
@@ -415,7 +417,10 @@ function renderExpense() {
   const rows = [...byProject(t.expenses)].sort((a, b) => b.date.localeCompare(a.date));
   document.getElementById("exp-project").innerHTML = t.projects.map(p =>
     `<option value="${p.id}" ${p.id === currentProjectId ? "selected" : ""}>${p.name}</option>`).join("");
-  document.getElementById("exp-material").innerHTML = MATERIALS.map(m => `<option>${m}</option>`).join("");
+  const extra = t.extraMaterials || [];
+  const used = (t.expenses || []).map(e => e.material).filter(Boolean);
+  const mats = [...new Set([...MATERIALS, ...extra, ...used])];
+  document.getElementById("mat-list").innerHTML = mats.map(m => `<option value="${m}"></option>`).join("");
   document.getElementById("exp-list").innerHTML = rows.map(e => `
     <div class="item">
       <div class="row"><strong>${e.material}</strong><span class="amount">${INR(e.total)}</span></div>
@@ -442,13 +447,19 @@ function saveExpense() {
   const rate = Number(document.getElementById("exp-rate").value) || 0;
   const total = qty * rate;
   const paid = Number(document.getElementById("exp-paid").value) || 0;
+  const material = (document.getElementById("exp-material").value || "").trim();
+  if (!material) { toast("என்ன வாங்கினீர்கள் — Cement / மரம் போடவும்"); return; }
   if (!qty || !rate) { toast("Qty மற்றும் Rate போடவும்"); return; }
   currentProjectId = document.getElementById("exp-project").value;
+  if (!MATERIALS.includes(material)) {
+    t.extraMaterials = t.extraMaterials || [];
+    if (!t.extraMaterials.includes(material)) t.extraMaterials.push(material);
+  }
   t.expenses.push({
     id: uid(),
     projectId: currentProjectId,
     date: document.getElementById("exp-date").value || today(),
-    material: document.getElementById("exp-material").value,
+    material,
     supplier: document.getElementById("exp-supplier").value.trim() || "Unknown",
     qty, unit: document.getElementById("exp-unit").value || "unit",
     rate, total, paid, balance: Math.max(0, total - paid),
