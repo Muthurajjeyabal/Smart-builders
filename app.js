@@ -345,8 +345,8 @@ function renderHome() {
       `<button class="${homeFilterId === p.id ? "on" : ""}" onclick="selectHomeProject('${p.id}')">${p.name}</button>`
     ).join("");
   document.getElementById("home-sub").textContent = selected
-    ? `${selected.name} மட்டும் — ${selected.location} · Owner ${selected.ownerName}`
-    : "அனைத்தும் = மொத்தம். மேலே ஒரு project tap செய்தால் அந்த site மட்டும்.";
+    ? `${selected.location} · ${selected.ownerName || ""}`
+    : "";
   document.getElementById("home-kpis").innerHTML = `
     <div class="card"><div class="label">Owner-இடம் வந்தது</div><div class="kpi blue">${INR(s.received)}</div>
       ${selected ? `<div class="tiny">இன்னும் ${INR(s.ownerDue)} · Sale ${INR(s.saleValue)}</div>` : `<div class="tiny">${t.projects.length} projects</div>`}</div>
@@ -561,7 +561,7 @@ function renderPeople() {
   const todayBanner = `<div class="item">
     <div class="label">இன்று வந்தார்கள் (${todayHere.length}/${workers.length})</div>
     <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "யாரும் mark பண்ணவில்லை"}</div>
-    <div class="tiny" style="margin-top:6px">வலது = இன்று. பெயர் = கணக்கு.</div>
+    
   </div>`;
   document.getElementById("worker-list").innerHTML = todayBanner + (workers.map(w => {
     const s = workerSummary(w, pid);
@@ -703,7 +703,7 @@ function renderMore() {
   }).join("");
   document.getElementById("sync-mode").textContent = usingServer
     ? "Server save ON (api.php) — phone/computer இரண்டிலும் same data."
-    : "இப்போது இந்த device-ல் மட்டும் save (localStorage). PHP hosting-ல் upload செய்தால் server save ஆகும்.";
+    : "";
   calcSqft();
 }
 

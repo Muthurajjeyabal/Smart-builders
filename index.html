@@ -27,13 +27,13 @@
     <div class="login-card card">
       <div class="hero-mark">க</div>
       <h1 style="margin-top:12px">சைட் கணக்கு</h1>
-      <p class="sub">Construction project accounts — 2 site, owner பணம், செலவு, supplier பாக்கி, profit.</p>
+      <p class="sub"></p>
       <form id="login-form">
         <div class="field"><label>Phone</label><input id="login-phone" inputmode="numeric" value="9876543210" /></div>
         <div class="field"><label>PIN</label><input id="login-pin" type="password" value="1234" /></div>
         <button class="btn btn-primary" type="submit">உள்நுழை</button>
       </form>
-      <p class="tiny" style="margin-top:12px">Demo login: 9876543210 / 1234 · Engineer Ravi · 3BHK Anna Nagar + 4BHK Velachery</p>
+      <p class="tiny" style="margin-top:12px">9876543210 / 1234</p>
     </div>
   </div>
 
@@ -45,7 +45,7 @@
 
     <section id="page-home" class="page active">
       <h1>இன்றைய கணக்கு</h1>
-      <p class="sub" id="home-sub">ஒரு project தேர்ந்தெடுத்தால் அந்த site மட்டும். அனைத்தும் = மொத்தம்.</p>
+      <p class="sub" id="home-sub"></p>
       <div id="home-seg" class="seg"></div>
       <div id="home-kpis" class="grid grid-2"></div>
       <h2 id="home-list-title">ஒவ்வொரு project-லும் வந்த பணம்</h2>
@@ -56,7 +56,7 @@
     <section id="page-quote" class="page">
       <button class="btn btn-ghost" onclick="renderHome(); show('page-home')">← Home</button>
       <h1 style="margin-top:10px">கஸ்டமர் கொட்டேஷன்</h1>
-      <p class="sub">Project உருவாக்குவதற்கு முன் estimate-ஐ WhatsApp-ல் அனுப்பவும்.</p>
+      <p class="sub"></p>
 
       <h2>உங்கள் பில்டர் விவரம்</h2>
       <div class="field"><label>Builders name</label><input id="q-firm" placeholder="Ravi Civil Works" /></div>
@@ -84,7 +84,7 @@
       <div class="field"><label>Shared / common sq.ft</label><input id="q-shared" type="number" step="0.01" value="0" /></div>
 
       <h2>Full site specification</h2>
-      <p class="tiny">கதவு, வயர், மரம், சிமெண்ட், ஸ்டீல் — மாற்றிக் கொள்ளலாம். WhatsApp quote-ல் எல்லாம் போகும்.</p>
+      
       <div id="spec-editor"></div>
       <div class="grid grid-2" style="margin:8px 0">
         <input id="spec-new-item" placeholder="புதிய item — Door lock" />
@@ -115,7 +115,7 @@
 
     <section id="page-expense" class="page">
       <h1>Daily expense</h1>
-      <p class="sub">லிஸ்டில் இல்லாவிட்டாலும் டைப் பண்ணுங்கள் — ஜன்னல் மரம், கதவு, வயர்.</p>
+      <p class="sub"></p>
       <div class="field"><label>Project</label><select id="exp-project"></select></div>
       <div class="grid grid-2">
         <div class="field"><label>Date</label><input id="exp-date" type="date" /></div>
@@ -139,13 +139,13 @@
       </div>
       <div class="field"><label>Note</label><input id="exp-note" placeholder="optional" /></div>
       <button class="btn btn-primary" onclick="saveExpense()">Save செலவு</button>
-      <h2>இந்த project entries</h2>
+      <h2>செலவுகள்</h2>
       <div id="exp-list" class="list"></div>
     </section>
 
     <section id="page-money" class="page">
       <h1>Owner payments</h1>
-      <p class="sub">Advance / stage payment. Sale value − received = பாக்கி.</p>
+      <p class="sub"></p>
       <div class="field"><label>Project</label><select id="pay-project"></select></div>
       <div class="card" id="owner-summary" style="margin-bottom:12px"></div>
       <div class="grid grid-2">
@@ -160,13 +160,13 @@
       <h2>வரலாறு</h2>
       <div id="owner-list" class="list"></div>
       <h2>Suppliers</h2>
-      <p class="tiny">Purchase vs paid. பாக்கி இங்கே கட்டவும்.</p>
+      
       <div id="supplier-list" class="list"></div>
     </section>
 
     <section id="page-people" class="page">
       <h1>ஆள்</h1>
-      <p class="sub">20 பேர் ஒரு பட்டியல். வலது = இன்று. பெயர் = அட்டென்டன்ஸ் + கூலி.</p>
+      <p class="sub"></p>
       <div class="field"><label>Project</label><select id="people-project"></select></div>
       <button class="btn btn-ghost" style="margin-bottom:10px" onclick="document.getElementById('nw-box').classList.toggle('hidden')">+ ஆள் சேர்</button>
       <div id="nw-box" class="card hidden" style="margin-bottom:10px">
@@ -198,7 +198,7 @@
       <button class="btn btn-ghost" onclick="resetDemo()" style="margin-bottom:10px">Demo data reset</button>
       <button class="btn btn-primary" style="margin-bottom:16px" onclick="openQuote()">கொட்டேஷன் அனுப்பு</button>
       <h2>புதிய project</h2>
-      <p class="tiny" style="margin-bottom:8px">முதலில் வகை தேர்வு — கஸ்டமர் ஒப்பந்தமா, சொந்த வீடு விற்பனையா.</p>
+      
       <div class="seg">
         <button type="button" id="np-type-contract" class="on" onclick="setNpType('contract')">கஸ்டமர் ஒப்பந்தம்</button>
         <button type="button" id="np-type-own" onclick="setNpType('own_sale')">சொந்த வீடு / விற்பனை</button>
@@ -222,14 +222,14 @@
         </div>
         <div class="field"><label>வேறு shared / common sq.ft (எப்போதும் பாதி)</label><input id="np-shared" type="number" step="0.01" placeholder="0" oninput="calcSqft()" /></div>
         <div class="card" id="np-sqft-view" style="margin-bottom:10px">
-          <div class="tiny">முழு ரேட் staircase வீட்டுடன் சேரும். பாதி என்றால் மட்டும் கீழே தனியாக.</div>
+          
           <div class="row" style="margin-top:8px"><span>Billable sq.ft</span><strong id="np-bill-sqft">0</strong></div>
           <div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">₹0</strong></div>
         </div>
       </div>
 
       <div id="np-own-box" class="hidden">
-        <p class="tiny" style="margin-bottom:8px">சொந்த வீடு என்றால் sq.ft கணக்கு வேண்டாம். செலவு + விற்பனை விலை மட்டும்.</p>
+        
         <div class="field"><label>எதிர்பார்க்கும் விற்பனை விலை ₹</label><input id="np-sale" type="number" placeholder="5000000" /></div>
       </div>
 
@@ -238,7 +238,7 @@
       <h2>P&L snapshot</h2>
       <div id="more-projects" class="list"></div>
       <button class="btn btn-danger" style="margin-top:18px" onclick="logout()">Logout</button>
-      <p class="tiny" style="margin-top:16px">சைட் கணக்கு · 1 engineer · பல projects · கொட்டேஷன் + accounts.</p>
+      
     </section>
 
     <nav class="nav">
@@ -249,6 +249,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>
