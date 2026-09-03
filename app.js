@@ -533,46 +533,57 @@ function renderPeople() {
     t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today() && Number(a.present) > 0)
   ).map(w => w.name);
   const todayBanner = `<div class="item">
-    <div class="label">இன்று வந்தார்கள்</div>
+    <div class="label">இன்று வந்தார்கள் (${todayHere.length}/${workers.length})</div>
     <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "யாரும் mark பண்ணவில்லை"}</div>
+    <div class="tiny" style="margin-top:6px">பட்டியலில் இன்று tap = வந்தார். பெயர் tap = முழு கணக்கு.</div>
   </div>`;
   document.getElementById("worker-list").innerHTML = todayBanner + (workers.map(w => {
     const s = workerSummary(w, pid);
     const todayRec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today());
     const todayVal = todayRec ? Number(todayRec.present) : 0;
-    const todayTxt = todayVal >= 1 ? "இன்று வந்தார்" : todayVal > 0 ? "இன்று அரை நாள்" : "இன்று இல்லை";
-    const todayCls = todayVal > 0 ? "yes" : "no";
-    const weekHtml = days.map((dt, i) => {
-      const rec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === dt);
-      const val = rec ? Number(rec.present) : 0;
-      const tag = val >= 1 ? "வந்தார்" : val > 0 ? "அரை நாள்" : "இல்லை";
-      const cls = val >= 1 ? "yes" : val > 0 ? "half" : "no";
-      const extra = dt === today() ? " · இன்று" : (i === 5 ? " · சம்பள நாள்" : "");
-      return `<div class="att-row" onclick="toggleAttend('${w.id}','${dt}')">
-        <span>${names[i]}${extra}</span>
-        <span class="att-tag ${cls}">${tag}</span>
-      </div>`;
-    }).join("");
-    const wageLine = w.wageType === "daily"
-      ? `நாள் கூலி ${INR(w.wage)} × ${s.days} நாள்`
-      : `வார கூலி ${INR(w.wage)} · வந்த நாள் ${s.days}`;
-    return `<div class="item">
-      <div class="row"><strong>${w.name}</strong><span class="pill">${w.type}</span></div>
-      <div class="tiny">${wageLine}</div>
-      <div class="grid grid-2" style="margin:8px 0">
+    const todayTxt = todayVal >= 1 ? "வந்தார்" : todayVal > 0 ? "அரை" : "இல்லை";
+    const todayCls = todayVal >= 1 ? "yes" : todayVal > 0 ? "half" : "no";
+    const open = openWorkerId === w.id;
+    let extra = "";
+    if (open) {
+      const weekHtml = days.map((dt, i) => {
+        const rec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === dt);
+        const val = rec ? Number(rec.present) : 0;
+        const tag = val >= 1 ? "வந்தார்" : val > 0 ? "அரை நாள்" : "இல்லை";
+        const cls = val >= 1 ? "yes" : val > 0 ? "half" : "no";
+        const lab = dt === today() ? " · இன்று" : (i === 5 ? " · சம்பள நாள்" : "");
+        return `<div class="att-row" onclick="toggleAttend('${w.id}','${dt}')">
+          <span>${names[i]}${lab}</span>
+          <span class="att-tag ${cls}">${tag}</span>
+        </div>`;
+      }).join("");
+      extra = `<div class="grid grid-2" style="margin:8px 0">
         <div><div class="label">சம்பாதித்தது</div><div class="amount">${INR(s.earned)}</div></div>
-        <div><div class="label">Advance வாங்கினார்</div><div class="amount">${INR(s.advance)}</div></div>
-        <div><div class="label">கூலி கொடுத்தது</div><div class="amount">${INR(s.paid)}</div></div>
-        <div><div class="label">இன்னும் கொடுக்க</div><div class="amount" style="color:${s.payable ? "#fda4af" : "#7dd3c0"}">${INR(s.payable)}</div></div>
+        <div><div class="label">Advance</div><div class="amount">${INR(s.advance)}</div></div>
+        <div><div class="label">கொடுத்தது</div><div class="amount">${INR(s.paid)}</div></div>
+        <div><div class="label">பாக்கி</div><div class="amount" style="color:${s.payable ? "#fda4af" : "#7dd3c0"}">${INR(s.payable)}</div></div>
       </div>
-      <button type="button" class="att-today ${todayCls}" onclick="toggleAttend('${w.id}','${today()}')">${todayTxt}</button>
       ${weekHtml}
       <div class="btn-row" style="margin-top:8px">
         <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance எடு</button>
         <button class="btn btn-primary" onclick="payWorker('${w.id}','salary')">கூலி கொடு ${INR(s.payable)}</button>
+      </div>`;
+    }
+    return `<div class="item">
+      <div class="row">
+        <div onclick="openWorker('${w.id}')" style="flex:1;cursor:pointer">
+          <strong>${w.name}</strong>
+          <div class="tiny">${w.type} · பாக்கி ${INR(s.payable)}</div>
+        </div>
+        <span class="att-tag ${todayCls}" onclick="toggleAttend('${w.id}','${today()}')">${todayTxt}</span>
       </div>
+      ${extra}
     </div>`;
   }).join("") || `<div class="muted">worker இல்லை</div>`);
+}
+function openWorker(id) {
+  openWorkerId = openWorkerId === id ? "" : id;
+  renderPeople();
 }
 
 function markPresent(workerId) {
@@ -671,6 +682,7 @@ function renderMore() {
 }
 
 let npType = "contract";
+let openWorkerId = "";
 function setNpType(type) {
   npType = type;
   document.getElementById("np-type-contract").classList.toggle("on", type === "contract");
