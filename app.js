@@ -522,6 +522,7 @@ function renderMore() {
   document.getElementById("sync-mode").textContent = usingServer
     ? "Server save ON (api.php) — phone/computer இரண்டிலும் same data."
     : "இப்போது இந்த device-ல் மட்டும் save (localStorage). PHP hosting-ல் upload செய்தால் server save ஆகும்.";
+  calcSqft();
 }
 
 let npType = "contract";
@@ -535,16 +536,26 @@ function setNpType(type) {
   calcSqft();
 }
 function calcSqft() {
+  const rateEl = document.getElementById("np-rate");
+  if (!rateEl) return { rate: 0, house: 0, total: 0, billSqft: 0 };
   const draft = {
-    sqftRate: Number(document.getElementById("np-rate").value) || 0,
+    sqftRate: Number(rateEl.value) || 0,
     houseSqft: Number(document.getElementById("np-house").value) || 0,
     stairSqft: Number(document.getElementById("np-stair").value) || 0,
     stairHalf: document.getElementById("np-stair-mode").value === "half",
     sharedSqft: Number(document.getElementById("np-shared").value) || 0
   };
   const s = sqftCalc(draft);
-  document.getElementById("np-bill-sqft").textContent = s.billSqft.toLocaleString("en-IN");
-  document.getElementById("np-contract-amt").textContent = INR(s.total);
+  const view = document.getElementById("np-sqft-view");
+  if (view) {
+    view.innerHTML = `
+      <div class="tiny">டைப் செய்ததும் கணக்கு மாறும்</div>
+      <div class="row"><span>வீடு ${s.house} × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>
+      <div class="row"><span>Staircase ${s.stair} × ${s.stairF === 0.5 ? "பாதி " + INR(s.rate / 2) : "முழு"}</span><span>${INR(s.stairAmt)}</span></div>
+      <div class="row"><span>Shared ${s.shared} × பாதி</span><span>${INR(s.sharedAmt)}</span></div>
+      <div class="row"><span>Billable sq.ft</span><strong id="np-bill-sqft">${s.billSqft.toLocaleString("en-IN")}</strong></div>
+      <div class="row"><span>ஒப்பந்த தொகை</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
+  }
   return s;
 }
 function addProject() {
@@ -654,6 +665,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("people-project").addEventListener("change", e => {
     currentProjectId = e.target.value; renderPeople();
   });
+  ["np-rate", "np-house", "np-stair", "np-shared"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", calcSqft);
+      el.addEventListener("keyup", calcSqft);
+      el.addEventListener("change", calcSqft);
+    }
+  });
+  const stairMode = document.getElementById("np-stair-mode");
+  if (stairMode) stairMode.addEventListener("change", calcSqft);
   document.getElementById("login-form").onsubmit = e => {
     e.preventDefault();
     const phone = document.getElementById("login-phone").value.trim();
