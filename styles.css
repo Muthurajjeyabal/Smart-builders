@@ -133,3 +133,36 @@ td.r, th.r { text-align: right; }
 .tiny { font-size: 11px; color: var(--muted); }
 .warn { color: #ffc48a; font-size: 12px; }
 .ok-text { color: #7dd3c0; }
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin: 10px 0 8px;
+}
+.day {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 6px 2px;
+  text-align: center;
+  cursor: pointer;
+}
+.day .dname { font-size: 10px; color: var(--muted); display: block; }
+.day .dnum { font-size: 14px; font-weight: 700; display: block; }
+.day .dmark { font-size: 11px; display: block; min-height: 16px; }
+.day.on { background: #1b3a32; border-color: #2a9d8f; }
+.day.half { background: #3a3014; border-color: #ffd166; }
+.day.today { outline: 1px solid var(--orange2); }
+.day.off .dmark { color: var(--muted); }
+.quote-sheet {
+  background: #fff8ef;
+  color: #1a1208;
+  border-radius: 14px;
+  padding: 16px;
+  border: 1px solid #e8d2b0;
+}
+.quote-sheet h3 { font-size: 18px; margin-bottom: 2px; }
+.quote-sheet .q-firm { font-size: 13px; color: #6b4e2e; }
+.quote-sheet .q-line { border-top: 1px dashed #c9a36a; margin: 10px 0; }
+.quote-sheet .row { color: #1a1208; }
+.quote-sheet .label, .quote-sheet .tiny { color: #6b4e2e; }

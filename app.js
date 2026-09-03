@@ -3,9 +3,9 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 const today = () => new Date().toISOString().slice(0, 10);
 
 const MATERIALS = [
-  "Cement", "Sand", "Steel", "Bricks/Blocks", "Wood / மரம்",
-  "Window / ஜன்னல்", "Door / கதவு", "Grill", "Plumbing",
-  "Electrical", "Wire / வயர்", "Paint", "Tiles",
+  "Cement", "Sand", "Steel", "Bricks/Blocks", "Wood",
+  "Window", "Door", "Grill", "Plumbing",
+  "Electrical", "Wire", "Paint", "Tiles",
   "Transport", "Machinery", "Miscellaneous"
 ];
 const WORK_TYPES = ["Mason", "Helper", "Electrician", "Plumber", "Carpenter", "Painter", "Other"];
@@ -13,37 +13,37 @@ const PAY_MODES = ["Cash", "UPI", "Bank", "Cheque"];
 
 function defaultSpecs() {
   return [
-    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Cement", val: "53 Grade — Ramco / Sankar" },
-    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Steel (TMT)", val: "Fe550 — Agni / Tata Tiscon" },
-    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Brick / Block", val: "Chamber brick / Fly ash block" },
-    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "RCC mix", val: "M20 — as per drawing" },
-    { cat: "சிவில் / ஸ்ட்ரக்சர்", item: "Sand", val: "M-sand + river sand mix" },
-    { cat: "கதவு", item: "Main door", val: "Teak wood / Steel security door" },
-    { cat: "கதவு", item: "Inner doors", val: "Flush door / Membrane" },
-    { cat: "கதவு", item: "Bathroom door", val: "PVC door" },
-    { cat: "கதவு", item: "Door lock", val: "Godrej / equivalent" },
-    { cat: "ஜன்னல்", item: "Windows", val: "Aluminium sliding / UPVC" },
-    { cat: "ஜன்னல்", item: "Grills", val: "MS square bar grill" },
-    { cat: "எலக்ட்ரிகல்", item: "Wire", val: "Finolex / Havells — 1.0, 1.5, 2.5, 4 sq.mm" },
-    { cat: "எலக்ட்ரிகல்", item: "Switches", val: "Anchor Roma / Legrand" },
-    { cat: "எலக்ட்ரிகல்", item: "DB + MCB", val: "Standard single phase DB" },
-    { cat: "எலக்ட்ரிகல்", item: "Fan / light points", val: "Hall, bed, kitchen — standard points" },
-    { cat: "ப்ளம்பிங்", item: "Inner pipe", val: "CPVC — Ashirvad / Supreme" },
-    { cat: "ப்ளம்பிங்", item: "Outer / drainage", val: "PVC 4 inch" },
-    { cat: "ப்ளம்பிங்", item: "Taps / CP fittings", val: "Watertec / Jaguar equivalent" },
-    { cat: "ப்ளம்பிங்", item: "Overhead tank", val: "1000 L PVC" },
-    { cat: "ப்ளம்பிங்", item: "Sump", val: "As per site — RCC" },
-    { cat: "ஃப்ளோரிங்", item: "Hall / Bedroom tiles", val: "Vitrified 2x2" },
-    { cat: "ஃப்ளோரிங்", item: "Bathroom tiles", val: "Anti-skid + wall tiles 8 ft" },
-    { cat: "ஃப்ளோரிங்", item: "Parking / sitout", val: "Parking tiles" },
-    { cat: "கிச்சன்", item: "Kitchen slab", val: "Granite 20mm" },
-    { cat: "கிச்சன்", item: "Sink", val: "SS single bowl" },
-    { cat: "சானிட்டரி", item: "WC / wash basin", val: "Parryware / Cera equivalent" },
-    { cat: "பெயிண்ட்", item: "Inner paint", val: "2 coat putty + emulsion" },
-    { cat: "பெயிண்ட்", item: "Outer paint", val: "Ace / Apex weather coat" },
-    { cat: "மரம் / வேறு", item: "Loft / cupboard framing", val: "Sal wood / country wood" },
-    { cat: "மரம் / வேறு", item: "Staircase railing", val: "SS / MS as selected" },
-    { cat: "மரம் / வேறு", item: "Compound / gate", val: "Extra — quote separately" }
+    { cat: "Civil / Structure", item: "Cement", val: "53 Grade — Ramco / Sankar" },
+    { cat: "Civil / Structure", item: "Steel (TMT)", val: "Fe550 — Agni / Tata Tiscon" },
+    { cat: "Civil / Structure", item: "Brick / Block", val: "Chamber brick / Fly ash block" },
+    { cat: "Civil / Structure", item: "RCC mix", val: "M20 — as per drawing" },
+    { cat: "Civil / Structure", item: "Sand", val: "M-sand + river sand mix" },
+    { cat: "Doors", item: "Main door", val: "Teak wood / Steel security door" },
+    { cat: "Doors", item: "Inner doors", val: "Flush door / Membrane" },
+    { cat: "Doors", item: "Bathroom door", val: "PVC door" },
+    { cat: "Doors", item: "Door lock", val: "Godrej / equivalent" },
+    { cat: "Windows", item: "Windows", val: "Aluminium sliding / UPVC" },
+    { cat: "Windows", item: "Grills", val: "MS square bar grill" },
+    { cat: "Electrical", item: "Wire", val: "Finolex / Havells — 1.0, 1.5, 2.5, 4 sq.mm" },
+    { cat: "Electrical", item: "Switches", val: "Anchor Roma / Legrand" },
+    { cat: "Electrical", item: "DB + MCB", val: "Standard single phase DB" },
+    { cat: "Electrical", item: "Fan / light points", val: "Hall, bed, kitchen — standard points" },
+    { cat: "Plumbing", item: "Inner pipe", val: "CPVC — Ashirvad / Supreme" },
+    { cat: "Plumbing", item: "Outer / drainage", val: "PVC 4 inch" },
+    { cat: "Plumbing", item: "Taps / CP fittings", val: "Watertec / Jaguar equivalent" },
+    { cat: "Plumbing", item: "Overhead tank", val: "1000 L PVC" },
+    { cat: "Plumbing", item: "Sump", val: "As per site — RCC" },
+    { cat: "Flooring", item: "Hall / Bedroom tiles", val: "Vitrified 2x2" },
+    { cat: "Flooring", item: "Bathroom tiles", val: "Anti-skid + wall tiles 8 ft" },
+    { cat: "Flooring", item: "Parking / sitout", val: "Parking tiles" },
+    { cat: "Kitchen", item: "Kitchen slab", val: "Granite 20mm" },
+    { cat: "Kitchen", item: "Sink", val: "SS single bowl" },
+    { cat: "Sanitary", item: "WC / wash basin", val: "Parryware / Cera equivalent" },
+    { cat: "Paint", item: "Inner paint", val: "2 coat putty + emulsion" },
+    { cat: "Paint", item: "Outer paint", val: "Ace / Apex weather coat" },
+    { cat: "Wood / Extra", item: "Loft / cupboard framing", val: "Sal wood / country wood" },
+    { cat: "Wood / Extra", item: "Staircase railing", val: "SS / MS as selected" },
+    { cat: "Wood / Extra", item: "Compound / gate", val: "Extra — quote separately" }
   ];
 }
 
@@ -125,10 +125,10 @@ function project(id) {
   return currentTenant().projects.find(p => p.id === (id || currentProjectId));
 }
 function typeLabel(p) {
-  return p.type === "contract" ? "ஒப்பந்தம்" : "சொந்த விற்பனை";
+  return p.type === "contract" ? "Contract" : "Own sale";
 }
 function valueLabel(p) {
-  return p.type === "contract" ? "எஸ்டிமேட்" : "விற்பனை விலை";
+  return p.type === "contract" ? "Estimate" : "Sale value";
 }
 function numVal(el) {
   if (!el) return 0;
@@ -340,7 +340,7 @@ function renderHome() {
   const selected = homeFilterId !== "all" ? t.projects.find(p => p.id === homeFilterId) : null;
   const s = selected ? projectStats(selected.id) : firmStats();
   document.getElementById("home-seg").innerHTML =
-    `<button class="${homeFilterId === "all" ? "on" : ""}" onclick="selectHomeProject('all')">அனைத்தும்</button>` +
+    `<button class="${homeFilterId === "all" ? "on" : ""}" onclick="selectHomeProject('all')">All</button>` +
     t.projects.map(p =>
       `<button class="${homeFilterId === p.id ? "on" : ""}" onclick="selectHomeProject('${p.id}')">${p.name}</button>`
     ).join("");
@@ -348,15 +348,15 @@ function renderHome() {
     ? `${selected.location} · ${selected.ownerName || ""}`
     : "";
   document.getElementById("home-kpis").innerHTML = `
-    <div class="card"><div class="label">Owner-இடம் வந்தது</div><div class="kpi blue">${INR(s.received)}</div>
-      ${selected ? `<div class="tiny">இன்னும் ${INR(s.ownerDue)} · Sale ${INR(s.saleValue)}</div>` : `<div class="tiny">${t.projects.length} projects</div>`}</div>
+    <div class="card"><div class="label">Received</div><div class="kpi blue">${INR(s.received)}</div>
+      ${selected ? `<div class="tiny">Due ${INR(s.ownerDue)} · Sale ${INR(s.saleValue)}</div>` : `<div class="tiny">${t.projects.length} projects</div>`}</div>
     <div class="card"><div class="label">Cash balance</div><div class="kpi ${s.cashBal >= 0 ? "green" : "red"}">${INR(s.cashBal)}</div></div>
-    <div class="card"><div class="label">Supplier பாக்கி</div><div class="kpi gold">${INR(s.supplierPayable)}</div></div>
-    <div class="card"><div class="label">Worker பாக்கி</div><div class="kpi gold">${INR(s.workerPayable)}</div></div>
+    <div class="card"><div class="label">Supplier due</div><div class="kpi gold">${INR(s.supplierPayable)}</div></div>
+    <div class="card"><div class="label">Worker due</div><div class="kpi gold">${INR(s.workerPayable)}</div></div>
   `;
   document.getElementById("home-list-title").textContent = selected
-    ? selected.name + " — சுருக்கம்"
-    : "ஒவ்வொரு project-லும் எவ்வளவு வந்தது";
+    ? selected.name + " summary"
+    : "Received by project";
   const list = selected ? [selected] : t.projects;
   document.getElementById("project-list").innerHTML = list.map(p => {
     const ps = projectStats(p.id);
@@ -364,13 +364,13 @@ function renderHome() {
       <div class="row"><strong>${p.name}</strong><span class="pill ${p.type === "contract" ? "due" : "ok"}">${typeLabel(p)}</span></div>
       <div class="tiny">${p.location} · ${p.ownerName || ""}</div>
       <div class="row" style="margin-top:10px"><span class="label">${valueLabel(p)}</span><span>${INR(ps.saleValue)}</span></div>
-      <div class="row"><span class="label">வந்தது</span><strong class="amount" style="color:var(--blue)">${INR(ps.received)}</strong></div>
-      <div class="row"><span class="label">இன்னும் owner பாக்கி</span><span>${INR(ps.ownerDue)}</span></div>
+      <div class="row"><span class="label">Received</span><strong class="amount" style="color:var(--blue)">${INR(ps.received)}</strong></div>
+      <div class="row"><span class="label">Owner due</span><span>${INR(ps.ownerDue)}</span></div>
       <div class="row"><span class="label">Cash</span><span>${INR(ps.cashBal)}</span></div>
-      <div class="row"><span class="label">Supplier / Worker பாக்கி</span><span>${INR(ps.supplierPayable)} / ${INR(ps.workerPayable)}</span></div>
+      <div class="row"><span class="label">Supplier / Worker due</span><span>${INR(ps.supplierPayable)} / ${INR(ps.workerPayable)}</span></div>
       <div class="row"><span class="label">Profit</span><span>${INR(ps.profit)}</span></div>
     </div>`;
-  }).join("") || `<div class="muted">இன்னும் project இல்லை</div>`;
+  }).join("") || `<div class="muted">No projects</div>`;
 }
 
 function renderProject() {
@@ -383,29 +383,29 @@ function renderProject() {
   let sqHtml = "";
   if (sq) {
     const houseLine = sq.stairHalf
-      ? `வீடு ${sq.house} sq.ft × ${INR(sq.rate)}`
-      : `வீடு ${sq.houseSqft} sq.ft (வீடு + staircase) × ${INR(sq.rate)}`;
+      ? `House ${sq.house} sq.ft × ${INR(sq.rate)}`
+      : `House ${sq.houseSqft} sq.ft (House + staircase) × ${INR(sq.rate)}`;
     sqHtml = `<div class="card" style="margin-bottom:10px">
-      <div class="label">எஸ்டிமேட் @ ${INR(sq.rate)} / sq.ft</div>
+      <div class="label">Estimate @ ${INR(sq.rate)} / sq.ft</div>
       <div class="row"><span>${houseLine}</span><span>${INR(sq.houseAmt)}</span></div>
-      ${sq.stairHalf && sq.stair > 0 ? `<div class="row"><span>Staircase ${sq.stair} sq.ft × பாதி</span><span>${INR(sq.stairAmt)}</span></div>` : ""}
-      ${sq.shared > 0 ? `<div class="row"><span>Shared ${sq.shared} sq.ft × பாதி</span><span>${INR(sq.sharedAmt)}</span></div>` : ""}
+      ${sq.stairHalf && sq.stair > 0 ? `<div class="row"><span>Staircase ${sq.stair} sq.ft × half</span><span>${INR(sq.stairAmt)}</span></div>` : ""}
+      ${sq.shared > 0 ? `<div class="row"><span>Shared ${sq.shared} sq.ft × half</span><span>${INR(sq.sharedAmt)}</span></div>` : ""}
       <div class="row"><strong>Billable ${sq.billSqft} sq.ft</strong><strong>${INR(sq.total)}</strong></div>
     </div>`;
   }
   document.getElementById("proj-sqft").innerHTML = sqHtml;
   document.getElementById("proj-kpis").innerHTML = `
-    <div class="card"><div class="label">வந்தது</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">${valueLabel(p)} ${INR(s.saleValue)} · பாக்கி ${INR(s.ownerDue)}</div></div>
-    <div class="card"><div class="label">Material செலவு</div><div class="kpi">${INR(s.materialTotal)}</div><div class="tiny">பாக்கி ${INR(s.supplierPayable)}</div></div>
-    <div class="card"><div class="label">Labour</div><div class="kpi">${INR(s.workerEarned)}</div><div class="tiny">பாக்கி ${INR(s.workerPayable)}</div></div>
+    <div class="card"><div class="label">Received</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">${valueLabel(p)} ${INR(s.saleValue)} · Due ${INR(s.ownerDue)}</div></div>
+    <div class="card"><div class="label">Material cost</div><div class="kpi">${INR(s.materialTotal)}</div><div class="tiny">Due ${INR(s.supplierPayable)}</div></div>
+    <div class="card"><div class="label">Labour</div><div class="kpi">${INR(s.workerEarned)}</div><div class="tiny">Due ${INR(s.workerPayable)}</div></div>
     <div class="card"><div class="label">Estimated profit</div><div class="kpi ${s.profit >= 0 ? "green" : "red"}">${INR(s.profit)}</div><div class="tiny">Sale ${INR(s.saleValue)}</div></div>
   `;
   document.getElementById("cash-table").innerHTML = `
-    <tr><td>${p.type === "contract" ? "கஸ்டமர் கொடுத்தது" : "விற்பனை / owner வந்தது"}</td><td class="r">${INR(s.received)}</td></tr>
+    <tr><td>${p.type === "contract" ? "Customer paid" : "Sale / owner paid"}</td><td class="r">${INR(s.received)}</td></tr>
     <tr><td>Material Expenses (bill)</td><td class="r">${INR(s.materialTotal)}</td></tr>
     <tr><td>Worker Payments (earned)</td><td class="r">${INR(s.workerEarned)}</td></tr>
     <tr><td>Other Expenses</td><td class="r">${INR(s.otherTotal)}</td></tr>
-    <tr><td>Cash வெளியேறியது</td><td class="r">${INR(s.cashOut)}</td></tr>
+    <tr><td>Cash out</td><td class="r">${INR(s.cashOut)}</td></tr>
     <tr><td><strong>Cash Balance</strong></td><td class="r"><strong>${INR(s.cashBal)}</strong></td></tr>
     <tr><td>Supplier Payable</td><td class="r">${INR(s.supplierPayable)}</td></tr>
     <tr><td>Worker Payable</td><td class="r">${INR(s.workerPayable)}</td></tr>
@@ -423,10 +423,10 @@ function renderExpense() {
   document.getElementById("mat-list").innerHTML = mats.map(m => `<option value="${m}"></option>`).join("");
   const labour = byProject(t.workerPays).map(p => {
     const w = t.workers.find(x => x.id === p.workerId);
-    const kind = p.type === "advance" ? "Advance" : "கூலி";
+    const kind = p.type === "advance" ? "Advance" : "Wage";
     return {
       date: p.date,
-      title: "ஆள் · " + kind + " · " + (w ? w.name : ""),
+      title: "Labour · " + kind + " · " + (w ? w.name : ""),
       detail: p.note || kind,
       amount: Number(p.amount),
       labour: true
@@ -449,12 +449,12 @@ function renderExpense() {
       <div class="row"><strong>${e.title}</strong><span class="amount">${INR(e.amount)}</span></div>
       <div class="tiny">${e.date} · ${e.detail}</div>
       ${e.labour
-        ? `<span class="pill ok" style="margin-top:6px">அன்றைய ஆள் செலவு · பணம் கொடுத்தது</span>`
+        ? `<span class="pill ok" style="margin-top:6px">Labour cash paid</span>`
         : `<div class="row" style="margin-top:6px">
             <span class="pill ok">Paid ${INR(e.paid)}</span>
             <span class="pill ${e.bal > 0 ? "due" : "ok"}">Bal ${INR(e.bal)}</span>
           </div>`}
-    </div>`).join("") || `<div class="muted">செலவு இல்லை</div>`;
+    </div>`).join("") || `<div class="muted">No expenses</div>`;
 }
 
 function calcExpLine() {
@@ -473,8 +473,8 @@ function saveExpense() {
   const total = qty * rate;
   const paid = Number(document.getElementById("exp-paid").value) || 0;
   const material = (document.getElementById("exp-material").value || "").trim();
-  if (!material) { toast("என்ன வாங்கினீர்கள் — Cement / மரம் போடவும்"); return; }
-  if (!qty || !rate) { toast("Qty மற்றும் Rate போடவும்"); return; }
+  if (!material) { toast("Enter item name"); return; }
+  if (!qty || !rate) { toast("Enter qty and rate"); return; }
   currentProjectId = document.getElementById("exp-project").value;
   if (!MATERIALS.includes(material)) {
     t.extraMaterials = t.extraMaterials || [];
@@ -495,7 +495,7 @@ function saveExpense() {
   document.getElementById("exp-rate").value = "";
   document.getElementById("exp-paid").value = "";
   document.getElementById("exp-note").value = "";
-  toast("செலவு save ஆனது. Supplier + cash + profit update.");
+  toast("Expense saved");
   renderExpense();
 }
 
@@ -510,12 +510,12 @@ function renderMoney() {
   document.getElementById("owner-summary").innerHTML = p ? `
     <div class="tiny">${typeLabel(p)}</div>
     <div class="row"><span>${valueLabel(p)}</span><strong>${INR(p.saleValue)}</strong></div>
-    <div class="row"><span>வந்தது</span><strong class="ok-text">${INR(rec)}</strong></div>
-    <div class="row"><span>இன்னும் பாக்கி</span><strong>${INR(Math.max(0, p.saleValue - rec))}</strong></div>
+    <div class="row"><span>Received</span><strong class="ok-text">${INR(rec)}</strong></div>
+    <div class="row"><span>Due Due</span><strong>${INR(Math.max(0, p.saleValue - rec))}</strong></div>
   ` : "";
   document.getElementById("owner-list").innerHTML = pays.map(x => `
     <div class="item"><div class="row"><strong>${INR(x.amount)}</strong><span class="pill">${x.mode}</span></div>
-    <div class="tiny">${x.date} · ${x.note || ""}</div></div>`).join("") || `<div class="muted">payment இல்லை</div>`;
+    <div class="tiny">${x.date} · ${x.note || ""}</div></div>`).join("") || `<div class="muted">No payments</div>`;
   renderSuppliers(pid);
 }
 function renderSuppliers(pid) {
@@ -525,15 +525,15 @@ function renderSuppliers(pid) {
   box.innerHTML = suppliers.map(s => `
     <div class="item">
       <div class="row"><strong>${s.supplier}</strong><span class="pill ${s.balance ? "due" : "ok"}">${INR(s.balance)}</span></div>
-      <div class="tiny">வாங்கியது ${INR(s.purchase)} · கட்டியது ${INR(s.paid)}</div>
-      ${s.balance ? `<button class="btn btn-ghost" style="margin-top:8px" onclick="paySupplier('${encodeURIComponent(s.supplier)}')">பாக்கி கட்டு</button>` : ""}
-    </div>`).join("") || `<div class="muted">supplier இல்லை</div>`;
+      <div class="tiny">Purchase ${INR(s.purchase)} · Paid ${INR(s.paid)}</div>
+      ${s.balance ? `<button class="btn btn-ghost" style="margin-top:8px" onclick="paySupplier('${encodeURIComponent(s.supplier)}')">Pay due</button>` : ""}
+    </div>`).join("") || `<div class="muted">No suppliers</div>`;
 }
 
 function saveOwnerPay() {
   const t = currentTenant();
   const amount = Number(document.getElementById("own-amt").value) || 0;
-  if (!amount) { toast("Amount போடவும்"); return; }
+  if (!amount) { toast("Enter amount"); return; }
   currentProjectId = document.getElementById("pay-project").value;
   t.ownerPayments.push({
     id: uid(), projectId: currentProjectId,
@@ -543,7 +543,7 @@ function saveOwnerPay() {
   });
   persist();
   document.getElementById("own-amt").value = "";
-  toast("Owner payment save ஆனது");
+  toast("Payment saved");
   renderMoney();
 }
 
@@ -554,20 +554,20 @@ function renderPeople() {
     `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.name}</option>`).join("");
   const workers = t.workers.filter(w => w.projectId === pid);
   const days = weekDates(today());
-  const names = ["திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி", "ஞாயிறு"];
+  const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const todayHere = workers.filter(w =>
     t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today() && Number(a.present) > 0)
   ).map(w => w.name);
   const todayBanner = `<div class="item">
-    <div class="label">இன்று வந்தார்கள் (${todayHere.length}/${workers.length})</div>
-    <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "யாரும் mark பண்ணவில்லை"}</div>
+    <div class="label">Present today (${todayHere.length}/${workers.length})</div>
+    <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "Nobody marked"}</div>
     
   </div>`;
   document.getElementById("worker-list").innerHTML = todayBanner + (workers.map(w => {
     const s = workerSummary(w, pid);
     const todayRec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today());
     const todayVal = todayRec ? Number(todayRec.present) : 0;
-    const todayTxt = todayVal >= 1 ? "வந்தார்" : todayVal > 0 ? "அரை" : "இல்லை";
+    const todayTxt = todayVal >= 1 ? "Present" : todayVal > 0 ? "Half" : "Off";
     const todayCls = todayVal >= 1 ? "yes" : todayVal > 0 ? "half" : "no";
     const open = openWorkerId === w.id;
     let extra = "";
@@ -575,37 +575,37 @@ function renderPeople() {
       const weekHtml = days.map((dt, i) => {
         const rec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === dt);
         const val = rec ? Number(rec.present) : 0;
-        const tag = val >= 1 ? "வந்தார்" : val > 0 ? "அரை நாள்" : "இல்லை";
+        const tag = val >= 1 ? "Present" : val > 0 ? "Half day" : "Off";
         const cls = val >= 1 ? "yes" : val > 0 ? "half" : "no";
-        const lab = dt === today() ? " · இன்று" : (i === 5 ? " · சம்பள நாள்" : "");
+        const lab = dt === today() ? " · today" : (i === 5 ? " · payday" : "");
         return `<div class="att-row" onclick="toggleAttend('${w.id}','${dt}')">
           <span>${names[i]}${lab}</span>
           <span class="att-tag ${cls}">${tag}</span>
         </div>`;
       }).join("");
       extra = `<div class="grid grid-2" style="margin:8px 0">
-        <div><div class="label">சம்பாதித்தது</div><div class="amount">${INR(s.earned)}</div></div>
+        <div><div class="label">Earned</div><div class="amount">${INR(s.earned)}</div></div>
         <div><div class="label">Advance</div><div class="amount">${INR(s.advance)}</div></div>
-        <div><div class="label">கொடுத்தது</div><div class="amount">${INR(s.paid)}</div></div>
-        <div><div class="label">பாக்கி</div><div class="amount" style="color:${s.payable ? "#fda4af" : "#7dd3c0"}">${INR(s.payable)}</div></div>
+        <div><div class="label">Paid</div><div class="amount">${INR(s.paid)}</div></div>
+        <div><div class="label">Due</div><div class="amount" style="color:${s.payable ? "#fda4af" : "#7dd3c0"}">${INR(s.payable)}</div></div>
       </div>
       ${weekHtml}
       <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance எடு</button>
-        <button class="btn btn-primary" onclick="payWorker('${w.id}','salary')">கூலி கொடு ${INR(s.payable)}</button>
+        <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance</button>
+        <button class="btn btn-primary" onclick="payWorker('${w.id}','salary')">Pay wage ${INR(s.payable)}</button>
       </div>`;
     }
     return `<div class="item">
       <div class="row">
         <div onclick="openWorker('${w.id}')" style="flex:1;cursor:pointer">
           <strong>${w.name}</strong>
-          <div class="tiny">${w.type} · பாக்கி ${INR(s.payable)}</div>
+          <div class="tiny">${w.type} · Due ${INR(s.payable)}</div>
         </div>
         <span class="att-tag ${todayCls}" onclick="toggleAttend('${w.id}','${today()}')">${todayTxt}</span>
       </div>
       ${extra}
     </div>`;
-  }).join("") || `<div class="muted">worker இல்லை</div>`);
+  }).join("") || `<div class="muted">No workers</div>`);
 }
 function openWorker(id) {
   openWorkerId = openWorkerId === id ? "" : id;
@@ -620,13 +620,13 @@ function toggleAttend(workerId, date) {
   const rec = t.attendance.find(a => a.workerId === workerId && a.date === date && a.projectId === currentProjectId);
   if (!rec) {
     t.attendance.push({ id: uid(), workerId, projectId: currentProjectId, date, present: 1 });
-    toast("வந்தார்");
+    toast("Present");
   } else if (Number(rec.present) >= 1) {
     rec.present = 0.5;
-    toast("அரை நாள்");
+    toast("Half day");
   } else {
     t.attendance = t.attendance.filter(a => a.id !== rec.id);
-    toast("இல்லை");
+    toast("Off");
   }
   persist();
   renderPeople();
@@ -640,25 +640,25 @@ function payWorker(workerId, type) {
   let amt = 0;
   let note = "";
   if (type === "advance") {
-    amt = Number(prompt(w.name + " — Advance எவ்வளவு எடுத்தார்?", "1000"));
+    amt = Number(prompt(w.name + " — advance amount?", "1000"));
     if (!amt) return;
     note = "Advance";
   } else {
-    if (!s.payable) { toast(w.name + " — கொடுக்க பாக்கி இல்லை"); return; }
-    const msg = w.name + " — சனி சம்பளம்\n\n"
-      + "சம்பாதித்தது: " + INR(s.earned) + "\n"
-      + "Advance கழிப்பு: − " + INR(s.advance) + "\n"
-      + "ஏற்கனவே கொடுத்தது: − " + INR(s.paid) + "\n"
-      + "இப்போது கொடுக்க: " + INR(s.payable);
+    if (!s.payable) { toast(w.name + " — nothing due"); return; }
+    const msg = w.name + " — Saturday wage\n\n"
+      + "Earned: " + INR(s.earned) + "\n"
+      + "Less advance: − " + INR(s.advance) + "\n"
+      + "Already paid: − " + INR(s.paid) + "\n"
+      + "Pay now: " + INR(s.payable);
     if (!confirm(msg)) return;
     amt = s.payable;
-    note = "சனி சம்பளம் − advance கழிப்பு";
+    note = "Saturday wage after advance";
   }
   t.workerPays.push({
     id: uid(), workerId, projectId: currentProjectId, date: today(), amount: amt, type, mode: "Cash", note
   });
   persist();
-  toast(type === "advance" ? "Advance பதிவு" : w.name + " — " + INR(amt) + " கொடுத்தது");
+  toast(type === "advance" ? "Advance saved" : w.name + " — " + INR(amt) + " paid");
   renderPeople();
 }
 
@@ -675,7 +675,7 @@ function paySupplier(nameEnc) {
 function addWorker() {
   const name = document.getElementById("nw-name").value.trim();
   const wage = Number(document.getElementById("nw-wage").value) || 0;
-  if (!name || !wage) { toast("Name + wage போடவும்"); return; }
+  if (!name || !wage) { toast("Enter name and wage"); return; }
   currentTenant().workers.push({
     id: uid(),
     projectId: document.getElementById("people-project").value,
@@ -687,7 +687,7 @@ function addWorker() {
   persist();
   document.getElementById("nw-name").value = "";
   document.getElementById("nw-wage").value = "";
-  toast("Worker சேர்ந்தார்");
+  toast("Worker added");
   renderPeople();
 }
 
@@ -702,7 +702,7 @@ function renderMore() {
     </div>`;
   }).join("");
   document.getElementById("sync-mode").textContent = usingServer
-    ? "Server save ON (api.php) — phone/computer இரண்டிலும் same data."
+    ? "Server save ON"
     : "";
   calcSqft();
 }
@@ -717,7 +717,7 @@ function setNpType(type) {
   document.getElementById("np-own-box").classList.toggle("hidden", type !== "own_sale");
   const estWrap = document.getElementById("np-est-wrap");
   if (estWrap) estWrap.classList.toggle("hidden", type === "contract");
-  document.getElementById("np-owner-label").textContent = type === "contract" ? "கஸ்டமர் பெயர்" : "வாங்குபவர் / owner பெயர்";
+  document.getElementById("np-owner-label").textContent = type === "contract" ? "Customer name" : "Buyer / owner name";
   calcSqft();
 }
 function calcSqft() {
@@ -733,24 +733,24 @@ function calcSqft() {
   const view = document.getElementById("np-sqft-view");
   if (view) {
     const houseLine = s.stairHalf
-      ? `வீடு ${s.house} sq.ft × ${INR(s.rate)}`
-      : `வீடு ${s.houseSqft} sq.ft (வீடு + staircase) × ${INR(s.rate)}`;
+      ? `House ${s.house} sq.ft × ${INR(s.rate)}`
+      : `House ${s.houseSqft} sq.ft (House + staircase) × ${INR(s.rate)}`;
     let html = `<div class="row"><span>${houseLine}</span><span>${INR(s.houseAmt)}</span></div>`;
     if (s.stairHalf && s.stair > 0) {
-      html += `<div class="row"><span>Staircase ${s.stair} sq.ft × பாதி ${INR(s.rate / 2)}</span><span>${INR(s.stairAmt)}</span></div>`;
+      html += `<div class="row"><span>Staircase ${s.stair} sq.ft × half ${INR(s.rate / 2)}</span><span>${INR(s.stairAmt)}</span></div>`;
     }
     if (s.shared > 0) {
-      html += `<div class="row"><span>Shared ${s.shared} sq.ft × பாதி ${INR(s.rate / 2)}</span><span>${INR(s.sharedAmt)}</span></div>`;
+      html += `<div class="row"><span>Shared ${s.shared} sq.ft × half ${INR(s.rate / 2)}</span><span>${INR(s.sharedAmt)}</span></div>`;
     }
     html += `<div class="row"><span>Billable sq.ft</span><strong id="np-bill-sqft">${s.billSqft.toLocaleString("en-IN")}</strong></div>`;
-    html += `<div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
+    html += `<div class="row"><span>Estimate</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
     view.innerHTML = html;
   }
   return s;
 }
 function addProject() {
   const name = document.getElementById("np-name").value.trim();
-  if (!name) { toast("Project name போடவும்"); return; }
+  if (!name) { toast("Enter project name"); return; }
   const p = {
     id: uid(), name,
     location: document.getElementById("np-loc").value.trim(),
@@ -765,7 +765,7 @@ function addProject() {
   };
   if (npType === "contract") {
     const s = calcSqft();
-    if (!s.rate || !s.houseSqft) { toast("ரேட் + வீடு sq.ft போடவும்"); return; }
+    if (!s.rate || !s.houseSqft) { toast("Enter rate and house sq.ft"); return; }
     p.sqftRate = s.rate;
     p.houseSqft = s.house;
     p.stairSqft = s.stair;
@@ -783,7 +783,7 @@ function addProject() {
     if (el) el.value = "";
   });
   calcSqft();
-  toast(npType === "contract" ? "ஒப்பந்த project சேர்ந்தது" : "விற்பனை project சேர்ந்தது");
+  toast(npType === "contract" ? "Contract project added" : "Sale project added");
   renderHome(); renderMore();
 }
 
@@ -814,7 +814,7 @@ function exportCsv() {
 }
 
 function resetDemo() {
-  if (!confirm("Demo data மீண்டும் load ஆகும். இந்த device-ல் உள்ள மாற்றங்கள் போகும்.")) return;
+  if (!confirm("Reset demo data on this device?")) return;
   db.tenants[session.tenantId] = seedTenant();
   persist();
   renderHome(); renderMore();
@@ -852,8 +852,8 @@ function renderSpecEditor() {
 function addSpecLine() {
   const item = (document.getElementById("spec-new-item").value || "").trim();
   const val = (document.getElementById("spec-new-val").value || "").trim();
-  if (!item) { toast("Item பெயர் போடவும்"); return; }
-  getSpecs().push({ cat: "கூடுதல்", item, val: val || "-" });
+  if (!item) { toast("Enter item name"); return; }
+  getSpecs().push({ cat: "Extra", item, val: val || "-" });
   document.getElementById("spec-new-item").value = "";
   document.getElementById("spec-new-val").value = "";
   persist();
@@ -909,21 +909,21 @@ function quoteText() {
   lines.push("Site: " + site);
   lines.push("");
   if (s.stairHalf) {
-    lines.push("வீடு: " + s.house + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
-    if (s.stair > 0) lines.push("Staircase (பாதி): " + s.stair + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.stairAmt));
+    lines.push("House: " + s.house + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
+    if (s.stair > 0) lines.push("Staircase (half): " + s.stair + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.stairAmt));
   } else {
-    lines.push("வீடு + staircase: " + s.houseSqft + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
+    lines.push("House + staircase: " + s.houseSqft + " sq.ft × " + INR(s.rate) + " = " + INR(s.houseAmt));
   }
-  if (s.shared > 0) lines.push("Shared (பாதி): " + s.shared + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.sharedAmt));
+  if (s.shared > 0) lines.push("Shared (half): " + s.shared + " sq.ft × " + INR(s.rate / 2) + " = " + INR(s.sharedAmt));
   lines.push("Billable: *" + s.billSqft.toLocaleString("en-IN") + " sq.ft*");
   lines.push("────────────────");
-  lines.push("*எஸ்டிமேட்: " + INR(s.total) + "*");
+  lines.push("*Estimate: " + INR(s.total) + "*");
   lines.push(specWhatsAppBlock());
   lines.push("");
-  lines.push("மேற்கண்ட specification இந்த ரேட்டில் அடங்கும்.");
-  lines.push("Compound, extra loft, extra points — தனியாக.");
-  lines.push("இந்த quote 15 நாட்களுக்கு செல்லும்.");
-  lines.push("நன்றி.");
+  lines.push("Above specification is included in this rate.");
+  lines.push("Compound, extra loft, extra points — extra.");
+  lines.push("Quote valid for 15 days.");
+  lines.push("Thank you.");
   return { s, cust, site, firm, phone, addr, text: lines.join("\n") };
 }
 function renderQuotePreview() {
@@ -933,12 +933,12 @@ function renderQuotePreview() {
   const s = q.s;
   let body = "";
   if (s.stairHalf) {
-    body += `<div class="row"><span>வீடு ${s.house} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
-    if (s.stair > 0) body += `<div class="row"><span>Staircase பாதி ${s.stair} sq.ft</span><span>${INR(s.stairAmt)}</span></div>`;
+    body += `<div class="row"><span>House ${s.house} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
+    if (s.stair > 0) body += `<div class="row"><span>Staircase half ${s.stair} sq.ft</span><span>${INR(s.stairAmt)}</span></div>`;
   } else {
-    body += `<div class="row"><span>வீடு + staircase ${s.houseSqft} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
+    body += `<div class="row"><span>House + staircase ${s.houseSqft} sq.ft × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>`;
   }
-  if (s.shared > 0) body += `<div class="row"><span>Shared பாதி ${s.shared} sq.ft</span><span>${INR(s.sharedAmt)}</span></div>`;
+  if (s.shared > 0) body += `<div class="row"><span>Shared half ${s.shared} sq.ft</span><span>${INR(s.sharedAmt)}</span></div>`;
   el.innerHTML = `
     <div class="tiny">QUOTATION</div>
     <h3>${q.firm || "Builder"}</h3>
@@ -950,11 +950,11 @@ function renderQuotePreview() {
     ${body}
     <div class="row"><span>Billable</span><strong>${s.billSqft.toLocaleString("en-IN")} sq.ft</strong></div>
     <div class="q-line"></div>
-    <div class="row"><span>எஸ்டிமேட்</span><strong>${INR(s.total)}</strong></div>
+    <div class="row"><span>Estimate</span><strong>${INR(s.total)}</strong></div>
     <div class="q-line"></div>
-    <div class="tiny">SPECIFICATION இந்த ரேட்டில் அடங்கும்</div>
+    <div class="tiny">Specification included in this rate</div>
     ${getSpecs().map(sp => `<div class="row"><span>${sp.item}</span><span>${sp.val}</span></div>`).join("")}
-    <div class="tiny" style="margin-top:8px">15 நாட்கள் செல்லும் · WhatsApp-ல் முழு list போகும்</div>`;
+    <div class="tiny" style="margin-top:8px">Valid 15 days</div>`;
   return q;
 }
 function openQuote() {
@@ -974,11 +974,11 @@ function saveBuilder() {
   document.getElementById("firm-label").textContent = t.firmName;
   persist();
   renderQuotePreview();
-  toast("பில்டர் விவரம் save");
+  toast("Builder saved");
 }
 function sendQuoteWA() {
   const q = renderQuotePreview();
-  if (!q.s.total) { toast("ரேட் + sq.ft போடவும்"); return; }
+  if (!q.s.total) { toast("Enter rate and sq.ft"); return; }
   saveBuilder();
   let phone = (document.getElementById("q-cust-phone").value || "").replace(/\D/g, "");
   if (phone.length === 10) phone = "91" + phone;
@@ -988,7 +988,7 @@ function sendQuoteWA() {
 }
 function quoteToProject() {
   const q = renderQuotePreview();
-  if (!q.s.total) { toast("முதலில் estimate போடவும்"); return; }
+  if (!q.s.total) { toast("Enter estimate first"); return; }
   const t = currentTenant();
   t.projects.push({
     id: uid(),
@@ -1011,7 +1011,7 @@ function quoteToProject() {
     status: "running"
   });
   persist();
-  toast("Project ஆனது. கொட்டேஷன் தொகை எஸ்டிமேட்.");
+  toast("Project created from quote");
   renderHome();
   show("page-home");
 }
@@ -1068,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const phone = document.getElementById("login-phone").value.trim();
     const pin = document.getElementById("login-pin").value.trim();
     const user = db.users.find(u => u.phone === phone && u.pin === pin);
-    if (!user) { toast("Phone / PIN தவறு. Demo: 9876543210 / 1234"); return; }
+    if (!user) { toast("Wrong phone / PIN. Demo: 9876543210 / 1234"); return; }
     session = user;
     afterLogin();
   };
