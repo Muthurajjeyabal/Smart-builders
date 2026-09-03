@@ -160,7 +160,7 @@
         <div class="card" id="np-sqft-view" style="margin-bottom:10px">
           <div class="tiny">வீடு sq.ft × முழு ரேட். Staircase shared ஆனால் பாதி. Shared area பாதி.</div>
           <div class="row" style="margin-top:8px"><span>Billable sq.ft</span><strong id="np-bill-sqft">0</strong></div>
-          <div class="row"><span>ஒப்பந்த தொகை</span><strong id="np-contract-amt" class="kpi blue">₹0</strong></div>
+          <div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">₹0</strong></div>
         </div>
       </div>
 
@@ -169,7 +169,7 @@
         <div class="field"><label>எதிர்பார்க்கும் விற்பனை விலை ₹</label><input id="np-sale" type="number" placeholder="5000000" /></div>
       </div>
 
-      <div class="field"><label>Estimated construction cost ₹ (optional)</label><input id="np-est" type="number" /></div>
+      <div class="field hidden" id="np-est-wrap"><label>Estimated construction cost ₹ (optional)</label><input id="np-est" type="number" /></div>
       <button class="btn btn-primary" onclick="addProject()">Project சேர்</button>
       <h2>P&L snapshot</h2>
       <div id="more-projects" class="list"></div>
@@ -185,6 +185,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

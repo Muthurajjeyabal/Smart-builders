@@ -89,7 +89,7 @@ function typeLabel(p) {
   return p.type === "contract" ? "ஒப்பந்தம்" : "சொந்த விற்பனை";
 }
 function valueLabel(p) {
-  return p.type === "contract" ? "ஒப்பந்த தொகை" : "விற்பனை விலை";
+  return p.type === "contract" ? "எஸ்டிமேட்" : "விற்பனை விலை";
 }
 function sqftCalc(p) {
   const rate = Number(p.sqftRate) || 0;
@@ -532,6 +532,8 @@ function setNpType(type) {
   document.getElementById("np-type-own").classList.toggle("on", type === "own_sale");
   document.getElementById("np-contract-box").classList.toggle("hidden", type !== "contract");
   document.getElementById("np-own-box").classList.toggle("hidden", type !== "own_sale");
+  const estWrap = document.getElementById("np-est-wrap");
+  if (estWrap) estWrap.classList.toggle("hidden", type === "contract");
   document.getElementById("np-owner-label").textContent = type === "contract" ? "கஸ்டமர் பெயர்" : "வாங்குபவர் / owner பெயர்";
   calcSqft();
 }
@@ -554,7 +556,7 @@ function calcSqft() {
       <div class="row"><span>Staircase ${s.stair} × ${s.stairF === 0.5 ? "பாதி " + INR(s.rate / 2) : "முழு"}</span><span>${INR(s.stairAmt)}</span></div>
       <div class="row"><span>Shared ${s.shared} × பாதி</span><span>${INR(s.sharedAmt)}</span></div>
       <div class="row"><span>Billable sq.ft</span><strong id="np-bill-sqft">${s.billSqft.toLocaleString("en-IN")}</strong></div>
-      <div class="row"><span>ஒப்பந்த தொகை</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
+      <div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
   }
   return s;
 }
@@ -582,6 +584,7 @@ function addProject() {
     p.stairHalf = s.stairF === 0.5;
     p.sharedSqft = s.shared;
     p.saleValue = s.total;
+    p.estimatedCost = s.total;
   } else {
     p.saleValue = Number(document.getElementById("np-sale").value) || 0;
   }
