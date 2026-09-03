@@ -177,12 +177,25 @@ function supplierLedger(pid) {
   return Object.values(map).sort((a, b) => b.balance - a.balance);
 }
 
+function ymd(d) {
+  const z = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+}
 function weekStart(d) {
   const x = new Date(d + "T00:00:00");
   const day = x.getDay();
   const diff = day === 0 ? 6 : day - 1;
   x.setDate(x.getDate() - diff);
-  return x.toISOString().slice(0, 10);
+  return ymd(x);
+}
+function weekDates(ref) {
+  const start = weekStart(ref || today());
+  const mon = new Date(start + "T00:00:00");
+  return Array.from({ length: 7 }, (_, i) => {
+    const x = new Date(mon);
+    x.setDate(mon.getDate() + i);
+    return ymd(x);
+  });
 }
 
 function workerSummary(w, pid) {
@@ -492,14 +505,32 @@ function renderPeople() {
   document.getElementById("people-project").innerHTML = t.projects.map(p =>
     `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.name}</option>`).join("");
   const workers = t.workers.filter(w => w.projectId === pid);
+  const days = weekDates(today());
+  const names = ["தி", "செ", "பு", "வி", "வெ", "ச", "ஞா"];
   document.getElementById("worker-list").innerHTML = workers.map(w => {
     const s = workerSummary(w, pid);
+    const weekHtml = days.map((dt, i) => {
+      const rec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === dt);
+      const val = rec ? Number(rec.present) : 0;
+      const cls = val >= 1 ? "on" : val > 0 ? "half" : "off";
+      const mark = val >= 1 ? "✓" : val > 0 ? "½" : "–";
+      const isToday = dt === today() ? " today" : "";
+      return `<button type="button" class="day ${cls}${isToday}" onclick="toggleAttend('${w.id}','${dt}')">
+        <span class="dname">${names[i]}</span>
+        <span class="dnum">${Number(dt.slice(8))}</span>
+        <span class="dmark">${mark}</span>
+      </button>`;
+    }).join("");
+    const wageLine = w.wageType === "daily"
+      ? `நாள் கூலி ${INR(w.wage)} × ${s.days} நாள் = ${INR(s.earned)}`
+      : `வார கூலி ${INR(w.wage)} · இந்த வாரம் ${s.days} நாள்`;
     return `<div class="item">
       <div class="row"><strong>${w.name}</strong><span class="pill">${w.type}</span></div>
-      <div class="tiny">${w.wageType} ${INR(w.wage)} · present ${s.days} day</div>
-      <div class="row" style="margin-top:6px"><span>Advance ${INR(s.advance)}</span><span>பாக்கி ${INR(s.payable)}</span></div>
+      <div class="tiny">${wageLine}</div>
+      <div class="week">${weekHtml}</div>
+      <div class="row"><span>Advance ${INR(s.advance)}</span><span>கொடுக்க ${INR(s.payable)}</span></div>
       <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost" onclick="markPresent('${w.id}')">இன்று present</button>
+        <button class="btn btn-ghost" onclick="toggleAttend('${w.id}','${today()}')">இன்று</button>
         <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance</button>
         <button class="btn btn-ghost" onclick="payWorker('${w.id}','salary')">Pay</button>
       </div>
@@ -516,12 +547,23 @@ function renderPeople() {
 }
 
 function markPresent(workerId) {
+  toggleAttend(workerId, today());
+}
+function toggleAttend(workerId, date) {
   const t = currentTenant();
-  const d = today();
-  const exists = t.attendance.find(a => a.workerId === workerId && a.date === d && a.projectId === currentProjectId);
-  if (exists) { toast("இன்று already present"); return; }
-  t.attendance.push({ id: uid(), workerId, projectId: currentProjectId, date: d, present: 1 });
-  persist(); toast("Attendance save"); renderPeople();
+  const rec = t.attendance.find(a => a.workerId === workerId && a.date === date && a.projectId === currentProjectId);
+  if (!rec) {
+    t.attendance.push({ id: uid(), workerId, projectId: currentProjectId, date, present: 1 });
+    toast("வந்தார்");
+  } else if (Number(rec.present) >= 1) {
+    rec.present = 0.5;
+    toast("அரை நாள்");
+  } else {
+    t.attendance = t.attendance.filter(a => a.id !== rec.id);
+    toast("இல்லை");
+  }
+  persist();
+  renderPeople();
 }
 
 function payWorker(workerId, type) {
