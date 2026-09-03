@@ -91,18 +91,27 @@ function typeLabel(p) {
 function valueLabel(p) {
   return p.type === "contract" ? "எஸ்டிமேட்" : "விற்பனை விலை";
 }
+function numVal(el) {
+  if (!el) return 0;
+  const n = parseFloat(String(el.value || "").replace(/,/g, "").trim());
+  return Number.isFinite(n) ? n : 0;
+}
 function sqftCalc(p) {
   const rate = Number(p.sqftRate) || 0;
   const house = Number(p.houseSqft) || 0;
   const stair = Number(p.stairSqft) || 0;
-  const stairF = p.stairHalf ? 0.5 : 1;
+  const stairHalf = !!p.stairHalf;
   const shared = Number(p.sharedSqft) || 0;
-  const houseAmt = house * rate;
-  const stairAmt = stair * rate * stairF;
+  const houseSqft = stairHalf ? house : house + stair;
+  const houseAmt = houseSqft * rate;
+  const stairAmt = stairHalf ? stair * rate * 0.5 : 0;
   const sharedAmt = shared * rate * 0.5;
-  const billSqft = house + stair * stairF + shared * 0.5;
+  const billSqft = houseSqft + (stairHalf ? stair * 0.5 : 0) + shared * 0.5;
   const total = houseAmt + stairAmt + sharedAmt;
-  return { rate, house, stair, stairF, shared, houseAmt, stairAmt, sharedAmt, billSqft, total };
+  return {
+    rate, house, stair, stairHalf, shared,
+    houseSqft, houseAmt, stairAmt, sharedAmt, billSqft, total
+  };
 }
 function byProject(arr, pid) {
   return (arr || []).filter(x => x.projectId === (pid || currentProjectId));
@@ -319,13 +328,20 @@ function renderProject() {
   document.getElementById("proj-title").textContent = p.name;
   document.getElementById("proj-sub").textContent = `${typeLabel(p)} · ${p.location} · ${p.ownerName || ""}`;
   const sq = p.type === "contract" ? sqftCalc(p) : null;
-  document.getElementById("proj-sqft").innerHTML = sq ? `<div class="card" style="margin-bottom:10px">
-    <div class="label">Sq.ft கணக்கு @ ${INR(sq.rate)} / sq.ft</div>
-    <div class="row"><span>வீடு ${sq.house} sq.ft × முழு</span><span>${INR(sq.houseAmt)}</span></div>
-    <div class="row"><span>Staircase ${sq.stair} sq.ft × ${sq.stairF === 0.5 ? "பாதி" : "முழு"}</span><span>${INR(sq.stairAmt)}</span></div>
-    <div class="row"><span>Shared ${sq.shared} sq.ft × பாதி</span><span>${INR(sq.sharedAmt)}</span></div>
-    <div class="row"><strong>Billable ${sq.billSqft} sq.ft</strong><strong>${INR(sq.total)}</strong></div>
-  </div>` : "";
+  let sqHtml = "";
+  if (sq) {
+    const houseLine = sq.stairHalf
+      ? `வீடு ${sq.house} sq.ft × ${INR(sq.rate)}`
+      : `வீடு ${sq.houseSqft} sq.ft (வீடு + staircase) × ${INR(sq.rate)}`;
+    sqHtml = `<div class="card" style="margin-bottom:10px">
+      <div class="label">எஸ்டிமேட் @ ${INR(sq.rate)} / sq.ft</div>
+      <div class="row"><span>${houseLine}</span><span>${INR(sq.houseAmt)}</span></div>
+      ${sq.stairHalf && sq.stair > 0 ? `<div class="row"><span>Staircase ${sq.stair} sq.ft × பாதி</span><span>${INR(sq.stairAmt)}</span></div>` : ""}
+      ${sq.shared > 0 ? `<div class="row"><span>Shared ${sq.shared} sq.ft × பாதி</span><span>${INR(sq.sharedAmt)}</span></div>` : ""}
+      <div class="row"><strong>Billable ${sq.billSqft} sq.ft</strong><strong>${INR(sq.total)}</strong></div>
+    </div>`;
+  }
+  document.getElementById("proj-sqft").innerHTML = sqHtml;
   document.getElementById("proj-kpis").innerHTML = `
     <div class="card"><div class="label">வந்தது</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">${valueLabel(p)} ${INR(s.saleValue)} · பாக்கி ${INR(s.ownerDue)}</div></div>
     <div class="card"><div class="label">Material செலவு</div><div class="kpi">${INR(s.materialTotal)}</div><div class="tiny">பாக்கி ${INR(s.supplierPayable)}</div></div>
@@ -538,25 +554,30 @@ function setNpType(type) {
   calcSqft();
 }
 function calcSqft() {
-  const rateEl = document.getElementById("np-rate");
-  if (!rateEl) return { rate: 0, house: 0, total: 0, billSqft: 0 };
+  const modeEl = document.getElementById("np-stair-mode");
   const draft = {
-    sqftRate: Number(rateEl.value) || 0,
-    houseSqft: Number(document.getElementById("np-house").value) || 0,
-    stairSqft: Number(document.getElementById("np-stair").value) || 0,
-    stairHalf: document.getElementById("np-stair-mode").value === "half",
-    sharedSqft: Number(document.getElementById("np-shared").value) || 0
+    sqftRate: numVal(document.getElementById("np-rate")),
+    houseSqft: numVal(document.getElementById("np-house")),
+    stairSqft: numVal(document.getElementById("np-stair")),
+    stairHalf: modeEl ? modeEl.value === "half" : true,
+    sharedSqft: numVal(document.getElementById("np-shared"))
   };
   const s = sqftCalc(draft);
   const view = document.getElementById("np-sqft-view");
   if (view) {
-    view.innerHTML = `
-      <div class="tiny">டைப் செய்ததும் கணக்கு மாறும்</div>
-      <div class="row"><span>வீடு ${s.house} × ${INR(s.rate)}</span><span>${INR(s.houseAmt)}</span></div>
-      <div class="row"><span>Staircase ${s.stair} × ${s.stairF === 0.5 ? "பாதி " + INR(s.rate / 2) : "முழு"}</span><span>${INR(s.stairAmt)}</span></div>
-      <div class="row"><span>Shared ${s.shared} × பாதி</span><span>${INR(s.sharedAmt)}</span></div>
-      <div class="row"><span>Billable sq.ft</span><strong id="np-bill-sqft">${s.billSqft.toLocaleString("en-IN")}</strong></div>
-      <div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
+    const houseLine = s.stairHalf
+      ? `வீடு ${s.house} sq.ft × ${INR(s.rate)}`
+      : `வீடு ${s.houseSqft} sq.ft (வீடு + staircase) × ${INR(s.rate)}`;
+    let html = `<div class="row"><span>${houseLine}</span><span>${INR(s.houseAmt)}</span></div>`;
+    if (s.stairHalf && s.stair > 0) {
+      html += `<div class="row"><span>Staircase ${s.stair} sq.ft × பாதி ${INR(s.rate / 2)}</span><span>${INR(s.stairAmt)}</span></div>`;
+    }
+    if (s.shared > 0) {
+      html += `<div class="row"><span>Shared ${s.shared} sq.ft × பாதி ${INR(s.rate / 2)}</span><span>${INR(s.sharedAmt)}</span></div>`;
+    }
+    html += `<div class="row"><span>Billable sq.ft</span><strong id="np-bill-sqft">${s.billSqft.toLocaleString("en-IN")}</strong></div>`;
+    html += `<div class="row"><span>எஸ்டிமேட்</span><strong id="np-contract-amt" class="kpi blue">${INR(s.total)}</strong></div>`;
+    view.innerHTML = html;
   }
   return s;
 }
@@ -577,11 +598,11 @@ function addProject() {
   };
   if (npType === "contract") {
     const s = calcSqft();
-    if (!s.rate || !s.house) { toast("ரேட் + வீடு sq.ft போடவும்"); return; }
+    if (!s.rate || !s.houseSqft) { toast("ரேட் + வீடு sq.ft போடவும்"); return; }
     p.sqftRate = s.rate;
     p.houseSqft = s.house;
     p.stairSqft = s.stair;
-    p.stairHalf = s.stairF === 0.5;
+    p.stairHalf = s.stairHalf;
     p.sharedSqft = s.shared;
     p.saleValue = s.total;
     p.estimatedCost = s.total;
@@ -668,16 +689,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("people-project").addEventListener("change", e => {
     currentProjectId = e.target.value; renderPeople();
   });
-  ["np-rate", "np-house", "np-stair", "np-shared"].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener("input", calcSqft);
-      el.addEventListener("keyup", calcSqft);
-      el.addEventListener("change", calcSqft);
-    }
+  document.addEventListener("input", e => {
+    if (e.target && ["np-rate", "np-house", "np-stair", "np-shared"].includes(e.target.id)) calcSqft();
   });
-  const stairMode = document.getElementById("np-stair-mode");
-  if (stairMode) stairMode.addEventListener("change", calcSqft);
+  document.addEventListener("change", e => {
+    if (e.target && ["np-rate", "np-house", "np-stair", "np-shared", "np-stair-mode"].includes(e.target.id)) calcSqft();
+  });
+  document.addEventListener("keyup", e => {
+    if (e.target && ["np-rate", "np-house", "np-stair", "np-shared"].includes(e.target.id)) calcSqft();
+  });
   document.getElementById("login-form").onsubmit = e => {
     e.preventDefault();
     const phone = document.getElementById("login-phone").value.trim();
