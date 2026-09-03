@@ -1,0 +1,572 @@
+const INR = n => "₹" + Math.round(Number(n) || 0).toLocaleString("en-IN");
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const today = () => new Date().toISOString().slice(0, 10);
+
+const MATERIALS = [
+  "Cement", "Sand", "Steel", "Bricks/Blocks", "Plumbing",
+  "Electrical", "Paint", "Tiles", "Transport", "Machinery", "Miscellaneous"
+];
+const WORK_TYPES = ["Mason", "Helper", "Electrician", "Plumber", "Carpenter", "Painter", "Other"];
+const PAY_MODES = ["Cash", "UPI", "Bank", "Cheque"];
+
+const DEFAULT_USERS = [
+  { phone: "9876543210", pin: "1234", name: "Engineer Ravi", tenantId: "t_ravi" }
+];
+
+function seedTenant() {
+  const p1 = "p_anna";
+  const p2 = "p_vela";
+  return {
+    tenantId: "t_ravi",
+    firmName: "Ravi Civil Works",
+    ownerName: "Engineer Ravi",
+    phone: "9876543210",
+    projects: [
+      {
+        id: p1, name: "3BHK House", location: "Anna Nagar",
+        ownerName: "Karthik", ownerPhone: "9000000001",
+        saleValue: 5000000, estimatedCost: 3200000, otherBudget: 300000,
+        startDate: "2026-06-01", endDate: "2026-12-15", floors: 2, status: "running"
+      },
+      {
+        id: p2, name: "4BHK House", location: "Velachery",
+        ownerName: "Meena", ownerPhone: "9000000002",
+        saleValue: 3800000, estimatedCost: 2500000, otherBudget: 200000,
+        startDate: "2026-07-10", endDate: "2027-01-30", floors: 2, status: "running"
+      }
+    ],
+    ownerPayments: [
+      { id: uid(), projectId: p1, date: "2026-06-05", amount: 700000, mode: "Bank", note: "Advance" },
+      { id: uid(), projectId: p1, date: "2026-08-01", amount: 500000, mode: "UPI", note: "2nd stage" },
+      { id: uid(), projectId: p2, date: "2026-07-12", amount: 500000, mode: "Bank", note: "Advance" },
+      { id: uid(), projectId: p2, date: "2026-08-20", amount: 300000, mode: "Cash", note: "Progress" }
+    ],
+    expenses: [
+      { id: uid(), projectId: p1, date: "2026-08-12", material: "Cement", supplier: "ABC Cement", qty: 50, unit: "bag", rate: 420, total: 21000, paid: 15000, balance: 6000, note: "" },
+      { id: uid(), projectId: p1, date: "2026-08-18", material: "Steel", supplier: "SK Steels", qty: 1.2, unit: "ton", rate: 62000, total: 74400, paid: 74400, balance: 0, note: "" },
+      { id: uid(), projectId: p1, date: "2026-08-25", material: "Sand", supplier: "River Sand Co", qty: 12, unit: "unit", rate: 4500, total: 54000, paid: 40000, balance: 14000, note: "" },
+      { id: uid(), projectId: p2, date: "2026-08-15", material: "Cement", supplier: "ABC Cement", qty: 40, unit: "bag", rate: 420, total: 16800, paid: 10000, balance: 6800, note: "" },
+      { id: uid(), projectId: p2, date: "2026-08-28", material: "Bricks/Blocks", supplier: "Anbu Blocks", qty: 2000, unit: "nos", rate: 8, total: 16000, paid: 16000, balance: 0, note: "" }
+    ],
+    supplierPays: [
+      { id: uid(), projectId: p1, supplier: "ABC Cement", date: "2026-08-20", amount: 0, mode: "UPI", note: "sample" }
+    ],
+    workers: [
+      { id: "w_ravi", projectId: p1, name: "Ravi Mason", type: "Mason", wageType: "weekly", wage: 8000 },
+      { id: "w_kumar", projectId: p1, name: "Kumar", type: "Helper", wageType: "daily", wage: 800 },
+      { id: "w_selva", projectId: p2, name: "Selvam", type: "Mason", wageType: "weekly", wage: 8500 }
+    ],
+    attendance: [
+      { id: uid(), workerId: "w_ravi", projectId: p1, date: "2026-09-01", present: 1 },
+      { id: uid(), workerId: "w_ravi", projectId: p1, date: "2026-09-02", present: 1 },
+      { id: uid(), workerId: "w_kumar", projectId: p1, date: "2026-09-02", present: 1 }
+    ],
+    workerPays: [
+      { id: uid(), workerId: "w_ravi", projectId: p1, date: "2026-08-30", amount: 2000, type: "advance", mode: "Cash", note: "Advance" }
+    ],
+    otherExpenses: [
+      { id: uid(), projectId: p1, date: "2026-08-10", title: "Site rent / other", amount: 15000, paid: 15000 }
+    ]
+  };
+}
+
+let db = { users: DEFAULT_USERS, tenants: { t_ravi: seedTenant() } };
+let session = null;
+let currentProjectId = null;
+let usingServer = false;
+
+function currentTenant() {
+  return db.tenants[session.tenantId];
+}
+function project(id) {
+  return currentTenant().projects.find(p => p.id === (id || currentProjectId));
+}
+function byProject(arr, pid) {
+  return (arr || []).filter(x => x.projectId === (pid || currentProjectId));
+}
+
+function expenseBalance(e) {
+  return Math.max(0, Number(e.total) - Number(e.paid));
+}
+
+function supplierLedger(pid) {
+  const t = currentTenant();
+  const map = {};
+  byProject(t.expenses, pid).forEach(e => {
+    const k = e.supplier || "Unknown";
+    if (!map[k]) map[k] = { supplier: k, purchase: 0, paid: 0, balance: 0 };
+    map[k].purchase += Number(e.total) || 0;
+    map[k].paid += Number(e.paid) || 0;
+  });
+  t.supplierPays.filter(p => !pid || p.projectId === pid).forEach(p => {
+    if (pid && p.projectId !== pid) return;
+    const k = p.supplier;
+    if (!map[k]) map[k] = { supplier: k, purchase: 0, paid: 0, balance: 0 };
+    map[k].paid += Number(p.amount) || 0;
+  });
+  Object.values(map).forEach(s => { s.balance = Math.max(0, s.purchase - s.paid); });
+  return Object.values(map).sort((a, b) => b.balance - a.balance);
+}
+
+function weekStart(d) {
+  const x = new Date(d + "T00:00:00");
+  const day = x.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  x.setDate(x.getDate() - diff);
+  return x.toISOString().slice(0, 10);
+}
+
+function workerSummary(w, pid) {
+  const t = currentTenant();
+  const att = t.attendance.filter(a => a.workerId === w.id && a.projectId === (pid || w.projectId) && a.present);
+  const pays = t.workerPays.filter(p => p.workerId === w.id && p.projectId === (pid || w.projectId));
+  const days = att.reduce((s, a) => s + Number(a.present || 1), 0);
+  let earned = 0;
+  if (w.wageType === "daily") earned = days * Number(w.wage);
+  else {
+    const weeks = new Set(att.map(a => weekStart(a.date)));
+    earned = weeks.size * Number(w.wage);
+  }
+  const advance = pays.filter(p => p.type === "advance").reduce((s, p) => s + Number(p.amount), 0);
+  const paid = pays.filter(p => p.type !== "advance").reduce((s, p) => s + Number(p.amount), 0);
+  const payable = Math.max(0, earned - advance - paid);
+  return { days, earned, advance, paid, payable };
+}
+
+function projectStats(pid) {
+  const t = currentTenant();
+  const p = t.projects.find(x => x.id === pid);
+  const received = byProject(t.ownerPayments, pid).reduce((s, x) => s + Number(x.amount), 0);
+  const ownerDue = Math.max(0, Number(p.saleValue) - received);
+  const materialTotal = byProject(t.expenses, pid).reduce((s, x) => s + Number(x.total), 0);
+  const materialPaid = byProject(t.expenses, pid).reduce((s, x) => s + Number(x.paid), 0);
+  const extraSupplierPaid = t.supplierPays.filter(x => x.projectId === pid).reduce((s, x) => s + Number(x.amount), 0);
+  const supplierPayable = supplierLedger(pid).reduce((s, x) => s + x.balance, 0);
+  const otherTotal = byProject(t.otherExpenses, pid).reduce((s, x) => s + Number(x.amount), 0);
+  const otherPaid = byProject(t.otherExpenses, pid).reduce((s, x) => s + Number(x.paid), 0);
+  const workers = t.workers.filter(w => w.projectId === pid);
+  let workerEarned = 0, workerPaidAll = 0, workerPayable = 0;
+  workers.forEach(w => {
+    const ws = workerSummary(w, pid);
+    workerEarned += ws.earned;
+    workerPaidAll += ws.advance + ws.paid;
+    workerPayable += ws.payable;
+  });
+  const cashIn = received;
+  const cashOut = materialPaid + extraSupplierPaid + workerPaidAll + otherPaid;
+  const cashBal = cashIn - cashOut;
+  const constructionCost = materialTotal + workerEarned + otherTotal;
+  const profit = Number(p.saleValue) - constructionCost;
+  return {
+    received, ownerDue, materialTotal, materialPaid, supplierPayable,
+    otherTotal, workerEarned, workerPaidAll, workerPayable,
+    cashIn, cashOut, cashBal, constructionCost, profit, saleValue: Number(p.saleValue)
+  };
+}
+
+function firmStats() {
+  const t = currentTenant();
+  const blank = {
+    received: 0, ownerDue: 0, materialTotal: 0, cashOut: 0, cashBal: 0,
+    supplierPayable: 0, workerPayable: 0, profit: 0, constructionCost: 0
+  };
+  return t.projects.reduce((acc, p) => {
+    const s = projectStats(p.id);
+    Object.keys(blank).forEach(k => acc[k] += s[k]);
+    return acc;
+  }, { ...blank });
+}
+
+async function persist() {
+  localStorage.setItem("sitekanakku_db", JSON.stringify(db));
+  if (!usingServer) return;
+  try {
+    await fetch("api.php?action=save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(db)
+    });
+  } catch (e) { /* offline ok */ }
+}
+
+async function loadDb() {
+  try {
+    const res = await fetch("api.php?action=load", { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.tenants) {
+        db = data;
+        usingServer = true;
+        return;
+      }
+    }
+  } catch (e) {}
+  const raw = localStorage.getItem("sitekanakku_db");
+  if (raw) {
+    try { db = JSON.parse(raw); } catch (e) {}
+  }
+  if (!db.users) db.users = DEFAULT_USERS;
+  if (!db.tenants || !db.tenants.t_ravi) db.tenants = { t_ravi: seedTenant() };
+}
+
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 2200);
+}
+
+function show(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b => {
+    b.classList.toggle("active", b.dataset.page === id);
+  });
+  window.scrollTo(0, 0);
+}
+
+function openProject(id) {
+  currentProjectId = id;
+  renderProject();
+  show("page-project");
+}
+
+function renderLogin() {
+  document.getElementById("app-shell").classList.add("hidden");
+  document.getElementById("login-shell").classList.remove("hidden");
+}
+
+function afterLogin() {
+  document.getElementById("login-shell").classList.add("hidden");
+  document.getElementById("app-shell").classList.remove("hidden");
+  document.getElementById("firm-label").textContent = currentTenant().firmName;
+  currentProjectId = currentTenant().projects[0]?.id || null;
+  renderHome();
+  show("page-home");
+}
+
+function renderHome() {
+  const t = currentTenant();
+  const f = firmStats();
+  document.getElementById("home-kpis").innerHTML = `
+    <div class="card"><div class="label">Owner-இடம் வந்தது</div><div class="kpi blue">${INR(f.received)}</div></div>
+    <div class="card"><div class="label">Cash balance</div><div class="kpi ${f.cashBal >= 0 ? "green" : "red"}">${INR(f.cashBal)}</div></div>
+    <div class="card"><div class="label">Supplier பாக்கி</div><div class="kpi gold">${INR(f.supplierPayable)}</div></div>
+    <div class="card"><div class="label">Worker பாக்கி</div><div class="kpi gold">${INR(f.workerPayable)}</div></div>
+  `;
+  document.getElementById("project-list").innerHTML = t.projects.map(p => {
+    const s = projectStats(p.id);
+    return `<div class="item click" onclick="openProject('${p.id}')">
+      <div class="row"><strong>${p.name}</strong><span class="pill ok">${p.status}</span></div>
+      <div class="tiny">${p.location} · ${p.ownerName} · ${p.floors} floor</div>
+      <div class="row" style="margin-top:8px">
+        <span class="label">Cash ${INR(s.cashBal)}</span>
+        <span class="label">Profit ${INR(s.profit)}</span>
+      </div>
+    </div>`;
+  }).join("") || `<div class="muted">இன்னும் project இல்லை</div>`;
+}
+
+function renderProject() {
+  const p = project();
+  if (!p) return;
+  const s = projectStats(p.id);
+  document.getElementById("proj-title").textContent = p.name;
+  document.getElementById("proj-sub").textContent = `${p.location} · Owner ${p.ownerName}`;
+  document.getElementById("proj-kpis").innerHTML = `
+    <div class="card"><div class="label">Received</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">இன்னும் ${INR(s.ownerDue)}</div></div>
+    <div class="card"><div class="label">Material செலவு</div><div class="kpi">${INR(s.materialTotal)}</div><div class="tiny">பாக்கி ${INR(s.supplierPayable)}</div></div>
+    <div class="card"><div class="label">Labour</div><div class="kpi">${INR(s.workerEarned)}</div><div class="tiny">பாக்கி ${INR(s.workerPayable)}</div></div>
+    <div class="card"><div class="label">Estimated profit</div><div class="kpi ${s.profit >= 0 ? "green" : "red"}">${INR(s.profit)}</div><div class="tiny">Sale ${INR(s.saleValue)}</div></div>
+  `;
+  document.getElementById("cash-table").innerHTML = `
+    <tr><td>Owner-இடமிருந்து Received</td><td class="r">${INR(s.received)}</td></tr>
+    <tr><td>Material Expenses (bill)</td><td class="r">${INR(s.materialTotal)}</td></tr>
+    <tr><td>Worker Payments (earned)</td><td class="r">${INR(s.workerEarned)}</td></tr>
+    <tr><td>Other Expenses</td><td class="r">${INR(s.otherTotal)}</td></tr>
+    <tr><td>Cash வெளியேறியது</td><td class="r">${INR(s.cashOut)}</td></tr>
+    <tr><td><strong>Cash Balance</strong></td><td class="r"><strong>${INR(s.cashBal)}</strong></td></tr>
+    <tr><td>Supplier Payable</td><td class="r">${INR(s.supplierPayable)}</td></tr>
+    <tr><td>Worker Payable</td><td class="r">${INR(s.workerPayable)}</td></tr>
+  `;
+}
+
+function renderExpense() {
+  const t = currentTenant();
+  const rows = [...byProject(t.expenses)].sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById("exp-project").innerHTML = t.projects.map(p =>
+    `<option value="${p.id}" ${p.id === currentProjectId ? "selected" : ""}>${p.name}</option>`).join("");
+  document.getElementById("exp-material").innerHTML = MATERIALS.map(m => `<option>${m}</option>`).join("");
+  document.getElementById("exp-list").innerHTML = rows.map(e => `
+    <div class="item">
+      <div class="row"><strong>${e.material}</strong><span class="amount">${INR(e.total)}</span></div>
+      <div class="tiny">${e.date} · ${e.supplier} · ${e.qty} × ${INR(e.rate)}</div>
+      <div class="row" style="margin-top:6px">
+        <span class="pill ok">Paid ${INR(e.paid)}</span>
+        <span class="pill ${e.balance > 0 ? "due" : "ok"}">Bal ${INR(expenseBalance(e))}</span>
+      </div>
+    </div>`).join("") || `<div class="muted">செலவு இல்லை</div>`;
+}
+
+function calcExpLine() {
+  const qty = Number(document.getElementById("exp-qty").value) || 0;
+  const rate = Number(document.getElementById("exp-rate").value) || 0;
+  const total = qty * rate;
+  const paid = Number(document.getElementById("exp-paid").value) || 0;
+  document.getElementById("exp-total-view").textContent = INR(total);
+  document.getElementById("exp-bal-view").textContent = INR(Math.max(0, total - paid));
+}
+
+function saveExpense() {
+  const t = currentTenant();
+  const qty = Number(document.getElementById("exp-qty").value) || 0;
+  const rate = Number(document.getElementById("exp-rate").value) || 0;
+  const total = qty * rate;
+  const paid = Number(document.getElementById("exp-paid").value) || 0;
+  if (!qty || !rate) { toast("Qty மற்றும் Rate போடவும்"); return; }
+  currentProjectId = document.getElementById("exp-project").value;
+  t.expenses.push({
+    id: uid(),
+    projectId: currentProjectId,
+    date: document.getElementById("exp-date").value || today(),
+    material: document.getElementById("exp-material").value,
+    supplier: document.getElementById("exp-supplier").value.trim() || "Unknown",
+    qty, unit: document.getElementById("exp-unit").value || "unit",
+    rate, total, paid, balance: Math.max(0, total - paid),
+    note: document.getElementById("exp-note").value.trim()
+  });
+  persist();
+  document.getElementById("exp-qty").value = "";
+  document.getElementById("exp-rate").value = "";
+  document.getElementById("exp-paid").value = "";
+  document.getElementById("exp-note").value = "";
+  toast("செலவு save ஆனது. Supplier + cash + profit update.");
+  renderExpense();
+}
+
+function renderMoney() {
+  const t = currentTenant();
+  const pid = currentProjectId;
+  document.getElementById("pay-project").innerHTML = t.projects.map(p =>
+    `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.name}</option>`).join("");
+  const pays = [...byProject(t.ownerPayments, pid)].sort((a, b) => b.date.localeCompare(a.date));
+  const p = project(pid);
+  const rec = pays.reduce((s, x) => s + Number(x.amount), 0);
+  document.getElementById("owner-summary").innerHTML = p ? `
+    <div class="row"><span>Sale value</span><strong>${INR(p.saleValue)}</strong></div>
+    <div class="row"><span>Received</span><strong class="ok-text">${INR(rec)}</strong></div>
+    <div class="row"><span>Owner பாக்கி</span><strong>${INR(Math.max(0, p.saleValue - rec))}</strong></div>
+  ` : "";
+  document.getElementById("owner-list").innerHTML = pays.map(x => `
+    <div class="item"><div class="row"><strong>${INR(x.amount)}</strong><span class="pill">${x.mode}</span></div>
+    <div class="tiny">${x.date} · ${x.note || ""}</div></div>`).join("") || `<div class="muted">payment இல்லை</div>`;
+}
+
+function saveOwnerPay() {
+  const t = currentTenant();
+  const amount = Number(document.getElementById("own-amt").value) || 0;
+  if (!amount) { toast("Amount போடவும்"); return; }
+  currentProjectId = document.getElementById("pay-project").value;
+  t.ownerPayments.push({
+    id: uid(), projectId: currentProjectId,
+    date: document.getElementById("own-date").value || today(),
+    amount, mode: document.getElementById("own-mode").value,
+    note: document.getElementById("own-note").value.trim()
+  });
+  persist();
+  document.getElementById("own-amt").value = "";
+  toast("Owner payment save ஆனது");
+  renderMoney();
+}
+
+function renderPeople() {
+  const t = currentTenant();
+  const pid = currentProjectId;
+  document.getElementById("people-project").innerHTML = t.projects.map(p =>
+    `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.name}</option>`).join("");
+  const workers = t.workers.filter(w => w.projectId === pid);
+  document.getElementById("worker-list").innerHTML = workers.map(w => {
+    const s = workerSummary(w, pid);
+    return `<div class="item">
+      <div class="row"><strong>${w.name}</strong><span class="pill">${w.type}</span></div>
+      <div class="tiny">${w.wageType} ${INR(w.wage)} · present ${s.days} day</div>
+      <div class="row" style="margin-top:6px"><span>Advance ${INR(s.advance)}</span><span>பாக்கி ${INR(s.payable)}</span></div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-ghost" onclick="markPresent('${w.id}')">இன்று present</button>
+        <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance</button>
+        <button class="btn btn-ghost" onclick="payWorker('${w.id}','salary')">Pay</button>
+      </div>
+    </div>`;
+  }).join("") || `<div class="muted">worker இல்லை</div>`;
+
+  const suppliers = supplierLedger(pid);
+  document.getElementById("supplier-list").innerHTML = suppliers.map(s => `
+    <div class="item">
+      <div class="row"><strong>${s.supplier}</strong><span class="pill ${s.balance ? "due" : "ok"}">${INR(s.balance)}</span></div>
+      <div class="tiny">Purchase ${INR(s.purchase)} · Paid ${INR(s.paid)}</div>
+      ${s.balance ? `<button class="btn btn-ghost" style="margin-top:8px" onclick="paySupplier('${encodeURIComponent(s.supplier)}')">பாக்கி கட்டு</button>` : ""}
+    </div>`).join("") || `<div class="muted">supplier இல்லை</div>`;
+}
+
+function markPresent(workerId) {
+  const t = currentTenant();
+  const d = today();
+  const exists = t.attendance.find(a => a.workerId === workerId && a.date === d && a.projectId === currentProjectId);
+  if (exists) { toast("இன்று already present"); return; }
+  t.attendance.push({ id: uid(), workerId, projectId: currentProjectId, date: d, present: 1 });
+  persist(); toast("Attendance save"); renderPeople();
+}
+
+function payWorker(workerId, type) {
+  const amt = Number(prompt(type === "advance" ? "Advance amount?" : "Pay amount?", "1000"));
+  if (!amt) return;
+  currentTenant().workerPays.push({
+    id: uid(), workerId, projectId: currentProjectId, date: today(), amount: amt, type, mode: "Cash", note: ""
+  });
+  persist(); toast("Worker payment save"); renderPeople();
+}
+
+function paySupplier(nameEnc) {
+  const name = decodeURIComponent(nameEnc);
+  const amt = Number(prompt(name + " — pay amount?", "1000"));
+  if (!amt) return;
+  currentTenant().supplierPays.push({
+    id: uid(), projectId: currentProjectId, supplier: name, date: today(), amount: amt, mode: "UPI", note: ""
+  });
+  persist(); toast("Supplier payment save"); renderPeople();
+}
+
+function addWorker() {
+  const name = document.getElementById("nw-name").value.trim();
+  const wage = Number(document.getElementById("nw-wage").value) || 0;
+  if (!name || !wage) { toast("Name + wage போடவும்"); return; }
+  currentTenant().workers.push({
+    id: uid(),
+    projectId: document.getElementById("people-project").value,
+    name,
+    type: document.getElementById("nw-type").value,
+    wageType: document.getElementById("nw-wtype").value,
+    wage
+  });
+  persist();
+  document.getElementById("nw-name").value = "";
+  document.getElementById("nw-wage").value = "";
+  toast("Worker சேர்ந்தார்");
+  renderPeople();
+}
+
+function renderMore() {
+  const t = currentTenant();
+  document.getElementById("more-projects").innerHTML = t.projects.map(p => {
+    const s = projectStats(p.id);
+    return `<div class="item">
+      <strong>${p.name}</strong>
+      <div class="tiny">${p.location} · Sale ${INR(p.saleValue)}</div>
+      <div class="tiny">Cost so far ${INR(s.constructionCost)} · Profit ${INR(s.profit)}</div>
+    </div>`;
+  }).join("");
+  document.getElementById("sync-mode").textContent = usingServer
+    ? "Server save ON (api.php) — phone/computer இரண்டிலும் same data."
+    : "இப்போது இந்த device-ல் மட்டும் save (localStorage). PHP hosting-ல் upload செய்தால் server save ஆகும்.";
+}
+
+function addProject() {
+  const name = document.getElementById("np-name").value.trim();
+  const sale = Number(document.getElementById("np-sale").value) || 0;
+  if (!name) { toast("Project name போடவும்"); return; }
+  const p = {
+    id: uid(), name,
+    location: document.getElementById("np-loc").value.trim(),
+    ownerName: document.getElementById("np-owner").value.trim(),
+    ownerPhone: "",
+    saleValue: sale, estimatedCost: Number(document.getElementById("np-est").value) || 0,
+    otherBudget: 0, startDate: today(), endDate: "", floors: Number(document.getElementById("np-floors").value) || 1,
+    status: "running"
+  };
+  currentTenant().projects.push(p);
+  persist();
+  ["np-name", "np-loc", "np-owner", "np-sale", "np-est", "np-floors"].forEach(id => document.getElementById(id).value = "");
+  toast("Project சேர்ந்தது");
+  renderHome(); renderMore();
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify(currentTenant(), null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "sitekanakku-backup.json";
+  a.click();
+}
+
+function exportCsv() {
+  const t = currentTenant();
+  const lines = ["date,project,type,detail,qty,rate,total,paid,balance"];
+  t.expenses.forEach(e => {
+    const p = t.projects.find(x => x.id === e.projectId);
+    lines.push([e.date, p?.name, "expense", e.material + " / " + e.supplier, e.qty, e.rate, e.total, e.paid, expenseBalance(e)].join(","));
+  });
+  t.ownerPayments.forEach(e => {
+    const p = t.projects.find(x => x.id === e.projectId);
+    lines.push([e.date, p?.name, "owner", e.note || "payment", "", "", e.amount, e.amount, 0].join(","));
+  });
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "sitekanakku-report.csv";
+  a.click();
+}
+
+function resetDemo() {
+  if (!confirm("Demo data மீண்டும் load ஆகும். இந்த device-ல் உள்ள மாற்றங்கள் போகும்.")) return;
+  db.tenants[session.tenantId] = seedTenant();
+  persist();
+  renderHome(); renderMore();
+  toast("Demo reset");
+}
+
+function logout() {
+  session = null;
+  renderLogin();
+}
+
+function bindNav() {
+  document.querySelectorAll(".nav button").forEach(b => {
+    b.onclick = () => {
+      if (b.dataset.page === "page-expense") renderExpense();
+      if (b.dataset.page === "page-money") renderMoney();
+      if (b.dataset.page === "page-people") renderPeople();
+      if (b.dataset.page === "page-more") renderMore();
+      if (b.dataset.page === "page-home") renderHome();
+      show(b.dataset.page);
+    };
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadDb();
+  bindNav();
+  document.getElementById("exp-date").value = today();
+  document.getElementById("own-date").value = today();
+  document.getElementById("exp-qty").addEventListener("input", calcExpLine);
+  document.getElementById("exp-rate").addEventListener("input", calcExpLine);
+  document.getElementById("exp-paid").addEventListener("input", calcExpLine);
+  document.getElementById("exp-project").addEventListener("change", e => {
+    currentProjectId = e.target.value; renderExpense();
+  });
+  document.getElementById("pay-project").addEventListener("change", e => {
+    currentProjectId = e.target.value; renderMoney();
+  });
+  document.getElementById("people-project").addEventListener("change", e => {
+    currentProjectId = e.target.value; renderPeople();
+  });
+  document.getElementById("login-form").onsubmit = e => {
+    e.preventDefault();
+    const phone = document.getElementById("login-phone").value.trim();
+    const pin = document.getElementById("login-pin").value.trim();
+    const user = db.users.find(u => u.phone === phone && u.pin === pin);
+    if (!user) { toast("Phone / PIN தவறு. Demo: 9876543210 / 1234"); return; }
+    session = user;
+    afterLogin();
+  };
+  renderLogin();
+});
