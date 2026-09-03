@@ -547,7 +547,7 @@ function renderPeople() {
       const val = rec ? Number(rec.present) : 0;
       const tag = val >= 1 ? "வந்தார்" : val > 0 ? "அரை நாள்" : "இல்லை";
       const cls = val >= 1 ? "yes" : val > 0 ? "half" : "no";
-      const extra = dt === today() ? " · இன்று" : "";
+      const extra = dt === today() ? " · இன்று" : (i === 5 ? " · சம்பள நாள்" : "");
       return `<div class="att-row" onclick="toggleAttend('${w.id}','${dt}')">
         <span>${names[i]}${extra}</span>
         <span class="att-tag ${cls}">${tag}</span>
@@ -569,7 +569,7 @@ function renderPeople() {
       ${weekHtml}
       <div class="btn-row" style="margin-top:8px">
         <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance எடு</button>
-        <button class="btn btn-ghost" onclick="payWorker('${w.id}','salary')">கூலி கொடு</button>
+        <button class="btn btn-primary" onclick="payWorker('${w.id}','salary')">கூலி கொடு ${INR(s.payable)}</button>
       </div>
     </div>`;
   }).join("") || `<div class="muted">worker இல்லை</div>`);
@@ -596,12 +596,33 @@ function toggleAttend(workerId, date) {
 }
 
 function payWorker(workerId, type) {
-  const amt = Number(prompt(type === "advance" ? "Advance amount?" : "Pay amount?", "1000"));
-  if (!amt) return;
-  currentTenant().workerPays.push({
-    id: uid(), workerId, projectId: currentProjectId, date: today(), amount: amt, type, mode: "Cash", note: ""
+  const t = currentTenant();
+  const w = t.workers.find(x => x.id === workerId);
+  if (!w) return;
+  const s = workerSummary(w, currentProjectId);
+  let amt = 0;
+  let note = "";
+  if (type === "advance") {
+    amt = Number(prompt(w.name + " — Advance எவ்வளவு எடுத்தார்?", "1000"));
+    if (!amt) return;
+    note = "Advance";
+  } else {
+    if (!s.payable) { toast(w.name + " — கொடுக்க பாக்கி இல்லை"); return; }
+    const msg = w.name + " — சனி சம்பளம்\n\n"
+      + "சம்பாதித்தது: " + INR(s.earned) + "\n"
+      + "Advance கழிப்பு: − " + INR(s.advance) + "\n"
+      + "ஏற்கனவே கொடுத்தது: − " + INR(s.paid) + "\n"
+      + "இப்போது கொடுக்க: " + INR(s.payable);
+    if (!confirm(msg)) return;
+    amt = s.payable;
+    note = "சனி சம்பளம் − advance கழிப்பு";
+  }
+  t.workerPays.push({
+    id: uid(), workerId, projectId: currentProjectId, date: today(), amount: amt, type, mode: "Cash", note
   });
-  persist(); toast("Worker payment save"); renderPeople();
+  persist();
+  toast(type === "advance" ? "Advance பதிவு" : w.name + " — " + INR(amt) + " கொடுத்தது");
+  renderPeople();
 }
 
 function paySupplier(nameEnc) {
