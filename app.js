@@ -421,14 +421,39 @@ function renderExpense() {
   const used = (t.expenses || []).map(e => e.material).filter(Boolean);
   const mats = [...new Set([...MATERIALS, ...extra, ...used])];
   document.getElementById("mat-list").innerHTML = mats.map(m => `<option value="${m}"></option>`).join("");
-  document.getElementById("exp-list").innerHTML = rows.map(e => `
+  const labour = byProject(t.workerPays).map(p => {
+    const w = t.workers.find(x => x.id === p.workerId);
+    const kind = p.type === "advance" ? "Advance" : "கூலி";
+    return {
+      date: p.date,
+      title: "ஆள் · " + kind + " · " + (w ? w.name : ""),
+      detail: p.note || kind,
+      amount: Number(p.amount),
+      labour: true
+    };
+  });
+  const mixed = [
+    ...rows.map(e => ({
+      date: e.date,
+      title: e.material,
+      detail: (e.supplier || "") + " · " + e.qty + " × " + INR(e.rate),
+      amount: Number(e.total),
+      paid: Number(e.paid),
+      bal: expenseBalance(e),
+      labour: false
+    })),
+    ...labour
+  ].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  document.getElementById("exp-list").innerHTML = mixed.map(e => `
     <div class="item">
-      <div class="row"><strong>${e.material}</strong><span class="amount">${INR(e.total)}</span></div>
-      <div class="tiny">${e.date} · ${e.supplier} · ${e.qty} × ${INR(e.rate)}</div>
-      <div class="row" style="margin-top:6px">
-        <span class="pill ok">Paid ${INR(e.paid)}</span>
-        <span class="pill ${e.balance > 0 ? "due" : "ok"}">Bal ${INR(expenseBalance(e))}</span>
-      </div>
+      <div class="row"><strong>${e.title}</strong><span class="amount">${INR(e.amount)}</span></div>
+      <div class="tiny">${e.date} · ${e.detail}</div>
+      ${e.labour
+        ? `<span class="pill ok" style="margin-top:6px">அன்றைய ஆள் செலவு · பணம் கொடுத்தது</span>`
+        : `<div class="row" style="margin-top:6px">
+            <span class="pill ok">Paid ${INR(e.paid)}</span>
+            <span class="pill ${e.bal > 0 ? "due" : "ok"}">Bal ${INR(e.bal)}</span>
+          </div>`}
     </div>`).join("") || `<div class="muted">செலவு இல்லை</div>`;
 }
 
