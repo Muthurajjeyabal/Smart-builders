@@ -73,6 +73,7 @@ function seedTenant() {
 let db = { users: DEFAULT_USERS, tenants: { t_ravi: seedTenant() } };
 let session = null;
 let currentProjectId = null;
+let homeFilterId = "all";
 let usingServer = false;
 
 function currentTenant() {
@@ -245,24 +246,45 @@ function afterLogin() {
   show("page-home");
 }
 
+function selectHomeProject(id) {
+  homeFilterId = id;
+  if (id !== "all") currentProjectId = id;
+  renderHome();
+}
+
 function renderHome() {
   const t = currentTenant();
-  const f = firmStats();
+  const selected = homeFilterId !== "all" ? t.projects.find(p => p.id === homeFilterId) : null;
+  const s = selected ? projectStats(selected.id) : firmStats();
+  document.getElementById("home-seg").innerHTML =
+    `<button class="${homeFilterId === "all" ? "on" : ""}" onclick="selectHomeProject('all')">அனைத்தும்</button>` +
+    t.projects.map(p =>
+      `<button class="${homeFilterId === p.id ? "on" : ""}" onclick="selectHomeProject('${p.id}')">${p.name}</button>`
+    ).join("");
+  document.getElementById("home-sub").textContent = selected
+    ? `${selected.name} மட்டும் — ${selected.location} · Owner ${selected.ownerName}`
+    : "அனைத்தும் = மொத்தம். மேலே ஒரு project tap செய்தால் அந்த site மட்டும்.";
   document.getElementById("home-kpis").innerHTML = `
-    <div class="card"><div class="label">Owner-இடம் வந்தது</div><div class="kpi blue">${INR(f.received)}</div></div>
-    <div class="card"><div class="label">Cash balance</div><div class="kpi ${f.cashBal >= 0 ? "green" : "red"}">${INR(f.cashBal)}</div></div>
-    <div class="card"><div class="label">Supplier பாக்கி</div><div class="kpi gold">${INR(f.supplierPayable)}</div></div>
-    <div class="card"><div class="label">Worker பாக்கி</div><div class="kpi gold">${INR(f.workerPayable)}</div></div>
+    <div class="card"><div class="label">Owner-இடம் வந்தது</div><div class="kpi blue">${INR(s.received)}</div>
+      ${selected ? `<div class="tiny">இன்னும் ${INR(s.ownerDue)} · Sale ${INR(s.saleValue)}</div>` : `<div class="tiny">${t.projects.length} projects</div>`}</div>
+    <div class="card"><div class="label">Cash balance</div><div class="kpi ${s.cashBal >= 0 ? "green" : "red"}">${INR(s.cashBal)}</div></div>
+    <div class="card"><div class="label">Supplier பாக்கி</div><div class="kpi gold">${INR(s.supplierPayable)}</div></div>
+    <div class="card"><div class="label">Worker பாக்கி</div><div class="kpi gold">${INR(s.workerPayable)}</div></div>
   `;
-  document.getElementById("project-list").innerHTML = t.projects.map(p => {
-    const s = projectStats(p.id);
+  document.getElementById("home-list-title").textContent = selected
+    ? selected.name + " — சுருக்கம்"
+    : "ஒவ்வொரு project-லும் எவ்வளவு வந்தது";
+  const list = selected ? [selected] : t.projects;
+  document.getElementById("project-list").innerHTML = list.map(p => {
+    const ps = projectStats(p.id);
     return `<div class="item click" onclick="openProject('${p.id}')">
       <div class="row"><strong>${p.name}</strong><span class="pill ok">${p.status}</span></div>
-      <div class="tiny">${p.location} · ${p.ownerName} · ${p.floors} floor</div>
-      <div class="row" style="margin-top:8px">
-        <span class="label">Cash ${INR(s.cashBal)}</span>
-        <span class="label">Profit ${INR(s.profit)}</span>
-      </div>
+      <div class="tiny">${p.location} · Owner ${p.ownerName}</div>
+      <div class="row" style="margin-top:10px"><span class="label">Owner வந்தது</span><strong class="amount" style="color:var(--blue)">${INR(ps.received)}</strong></div>
+      <div class="row"><span class="label">இன்னும் owner பாக்கி</span><span>${INR(ps.ownerDue)}</span></div>
+      <div class="row"><span class="label">Cash</span><span>${INR(ps.cashBal)}</span></div>
+      <div class="row"><span class="label">Supplier / Worker பாக்கி</span><span>${INR(ps.supplierPayable)} / ${INR(ps.workerPayable)}</span></div>
+      <div class="row"><span class="label">Profit</span><span>${INR(ps.profit)}</span></div>
     </div>`;
   }).join("") || `<div class="muted">இன்னும் project இல்லை</div>`;
 }
