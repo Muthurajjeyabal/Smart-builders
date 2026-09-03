@@ -25,13 +25,16 @@ function seedTenant() {
       {
         id: p1, name: "3BHK House", location: "Anna Nagar",
         ownerName: "Karthik", ownerPhone: "9000000001",
+        type: "own_sale",
         saleValue: 5000000, estimatedCost: 3200000, otherBudget: 300000,
         startDate: "2026-06-01", endDate: "2026-12-15", floors: 2, status: "running"
       },
       {
         id: p2, name: "4BHK House", location: "Velachery",
         ownerName: "Meena", ownerPhone: "9000000002",
-        saleValue: 3800000, estimatedCost: 2500000, otherBudget: 200000,
+        type: "contract",
+        sqftRate: 2500, houseSqft: 1400, stairSqft: 80, stairHalf: true, sharedSqft: 40,
+        saleValue: 3650000, estimatedCost: 2500000, otherBudget: 200000,
         startDate: "2026-07-10", endDate: "2027-01-30", floors: 2, status: "running"
       }
     ],
@@ -81,6 +84,25 @@ function currentTenant() {
 }
 function project(id) {
   return currentTenant().projects.find(p => p.id === (id || currentProjectId));
+}
+function typeLabel(p) {
+  return p.type === "contract" ? "ஒப்பந்தம்" : "சொந்த விற்பனை";
+}
+function valueLabel(p) {
+  return p.type === "contract" ? "ஒப்பந்த தொகை" : "விற்பனை விலை";
+}
+function sqftCalc(p) {
+  const rate = Number(p.sqftRate) || 0;
+  const house = Number(p.houseSqft) || 0;
+  const stair = Number(p.stairSqft) || 0;
+  const stairF = p.stairHalf ? 0.5 : 1;
+  const shared = Number(p.sharedSqft) || 0;
+  const houseAmt = house * rate;
+  const stairAmt = stair * rate * stairF;
+  const sharedAmt = shared * rate * 0.5;
+  const billSqft = house + stair * stairF + shared * 0.5;
+  const total = houseAmt + stairAmt + sharedAmt;
+  return { rate, house, stair, stairF, shared, houseAmt, stairAmt, sharedAmt, billSqft, total };
 }
 function byProject(arr, pid) {
   return (arr || []).filter(x => x.projectId === (pid || currentProjectId));
@@ -278,9 +300,10 @@ function renderHome() {
   document.getElementById("project-list").innerHTML = list.map(p => {
     const ps = projectStats(p.id);
     return `<div class="item click" onclick="openProject('${p.id}')">
-      <div class="row"><strong>${p.name}</strong><span class="pill ok">${p.status}</span></div>
-      <div class="tiny">${p.location} · Owner ${p.ownerName}</div>
-      <div class="row" style="margin-top:10px"><span class="label">Owner வந்தது</span><strong class="amount" style="color:var(--blue)">${INR(ps.received)}</strong></div>
+      <div class="row"><strong>${p.name}</strong><span class="pill ${p.type === "contract" ? "due" : "ok"}">${typeLabel(p)}</span></div>
+      <div class="tiny">${p.location} · ${p.ownerName || ""}</div>
+      <div class="row" style="margin-top:10px"><span class="label">${valueLabel(p)}</span><span>${INR(ps.saleValue)}</span></div>
+      <div class="row"><span class="label">வந்தது</span><strong class="amount" style="color:var(--blue)">${INR(ps.received)}</strong></div>
       <div class="row"><span class="label">இன்னும் owner பாக்கி</span><span>${INR(ps.ownerDue)}</span></div>
       <div class="row"><span class="label">Cash</span><span>${INR(ps.cashBal)}</span></div>
       <div class="row"><span class="label">Supplier / Worker பாக்கி</span><span>${INR(ps.supplierPayable)} / ${INR(ps.workerPayable)}</span></div>
@@ -294,15 +317,23 @@ function renderProject() {
   if (!p) return;
   const s = projectStats(p.id);
   document.getElementById("proj-title").textContent = p.name;
-  document.getElementById("proj-sub").textContent = `${p.location} · Owner ${p.ownerName}`;
+  document.getElementById("proj-sub").textContent = `${typeLabel(p)} · ${p.location} · ${p.ownerName || ""}`;
+  const sq = p.type === "contract" ? sqftCalc(p) : null;
+  document.getElementById("proj-sqft").innerHTML = sq ? `<div class="card" style="margin-bottom:10px">
+    <div class="label">Sq.ft கணக்கு @ ${INR(sq.rate)} / sq.ft</div>
+    <div class="row"><span>வீடு ${sq.house} sq.ft × முழு</span><span>${INR(sq.houseAmt)}</span></div>
+    <div class="row"><span>Staircase ${sq.stair} sq.ft × ${sq.stairF === 0.5 ? "பாதி" : "முழு"}</span><span>${INR(sq.stairAmt)}</span></div>
+    <div class="row"><span>Shared ${sq.shared} sq.ft × பாதி</span><span>${INR(sq.sharedAmt)}</span></div>
+    <div class="row"><strong>Billable ${sq.billSqft} sq.ft</strong><strong>${INR(sq.total)}</strong></div>
+  </div>` : "";
   document.getElementById("proj-kpis").innerHTML = `
-    <div class="card"><div class="label">Received</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">இன்னும் ${INR(s.ownerDue)}</div></div>
+    <div class="card"><div class="label">வந்தது</div><div class="kpi blue">${INR(s.received)}</div><div class="tiny">${valueLabel(p)} ${INR(s.saleValue)} · பாக்கி ${INR(s.ownerDue)}</div></div>
     <div class="card"><div class="label">Material செலவு</div><div class="kpi">${INR(s.materialTotal)}</div><div class="tiny">பாக்கி ${INR(s.supplierPayable)}</div></div>
     <div class="card"><div class="label">Labour</div><div class="kpi">${INR(s.workerEarned)}</div><div class="tiny">பாக்கி ${INR(s.workerPayable)}</div></div>
     <div class="card"><div class="label">Estimated profit</div><div class="kpi ${s.profit >= 0 ? "green" : "red"}">${INR(s.profit)}</div><div class="tiny">Sale ${INR(s.saleValue)}</div></div>
   `;
   document.getElementById("cash-table").innerHTML = `
-    <tr><td>Owner-இடமிருந்து Received</td><td class="r">${INR(s.received)}</td></tr>
+    <tr><td>${p.type === "contract" ? "கஸ்டமர் கொடுத்தது" : "விற்பனை / owner வந்தது"}</td><td class="r">${INR(s.received)}</td></tr>
     <tr><td>Material Expenses (bill)</td><td class="r">${INR(s.materialTotal)}</td></tr>
     <tr><td>Worker Payments (earned)</td><td class="r">${INR(s.workerEarned)}</td></tr>
     <tr><td>Other Expenses</td><td class="r">${INR(s.otherTotal)}</td></tr>
@@ -375,9 +406,10 @@ function renderMoney() {
   const p = project(pid);
   const rec = pays.reduce((s, x) => s + Number(x.amount), 0);
   document.getElementById("owner-summary").innerHTML = p ? `
-    <div class="row"><span>Sale value</span><strong>${INR(p.saleValue)}</strong></div>
-    <div class="row"><span>Received</span><strong class="ok-text">${INR(rec)}</strong></div>
-    <div class="row"><span>Owner பாக்கி</span><strong>${INR(Math.max(0, p.saleValue - rec))}</strong></div>
+    <div class="tiny">${typeLabel(p)}</div>
+    <div class="row"><span>${valueLabel(p)}</span><strong>${INR(p.saleValue)}</strong></div>
+    <div class="row"><span>வந்தது</span><strong class="ok-text">${INR(rec)}</strong></div>
+    <div class="row"><span>இன்னும் பாக்கி</span><strong>${INR(Math.max(0, p.saleValue - rec))}</strong></div>
   ` : "";
   document.getElementById("owner-list").innerHTML = pays.map(x => `
     <div class="item"><div class="row"><strong>${INR(x.amount)}</strong><span class="pill">${x.mode}</span></div>
@@ -483,7 +515,7 @@ function renderMore() {
     const s = projectStats(p.id);
     return `<div class="item">
       <strong>${p.name}</strong>
-      <div class="tiny">${p.location} · Sale ${INR(p.saleValue)}</div>
+      <div class="tiny">${typeLabel(p)} · ${p.location} · ${valueLabel(p)} ${INR(p.saleValue)}</div>
       <div class="tiny">Cost so far ${INR(s.constructionCost)} · Profit ${INR(s.profit)}</div>
     </div>`;
   }).join("");
@@ -492,23 +524,64 @@ function renderMore() {
     : "இப்போது இந்த device-ல் மட்டும் save (localStorage). PHP hosting-ல் upload செய்தால் server save ஆகும்.";
 }
 
+let npType = "contract";
+function setNpType(type) {
+  npType = type;
+  document.getElementById("np-type-contract").classList.toggle("on", type === "contract");
+  document.getElementById("np-type-own").classList.toggle("on", type === "own_sale");
+  document.getElementById("np-contract-box").classList.toggle("hidden", type !== "contract");
+  document.getElementById("np-own-box").classList.toggle("hidden", type !== "own_sale");
+  document.getElementById("np-owner-label").textContent = type === "contract" ? "கஸ்டமர் பெயர்" : "வாங்குபவர் / owner பெயர்";
+  calcSqft();
+}
+function calcSqft() {
+  const draft = {
+    sqftRate: Number(document.getElementById("np-rate").value) || 0,
+    houseSqft: Number(document.getElementById("np-house").value) || 0,
+    stairSqft: Number(document.getElementById("np-stair").value) || 0,
+    stairHalf: document.getElementById("np-stair-mode").value === "half",
+    sharedSqft: Number(document.getElementById("np-shared").value) || 0
+  };
+  const s = sqftCalc(draft);
+  document.getElementById("np-bill-sqft").textContent = s.billSqft.toLocaleString("en-IN");
+  document.getElementById("np-contract-amt").textContent = INR(s.total);
+  return s;
+}
 function addProject() {
   const name = document.getElementById("np-name").value.trim();
-  const sale = Number(document.getElementById("np-sale").value) || 0;
   if (!name) { toast("Project name போடவும்"); return; }
   const p = {
     id: uid(), name,
     location: document.getElementById("np-loc").value.trim(),
     ownerName: document.getElementById("np-owner").value.trim(),
     ownerPhone: "",
-    saleValue: sale, estimatedCost: Number(document.getElementById("np-est").value) || 0,
-    otherBudget: 0, startDate: today(), endDate: "", floors: Number(document.getElementById("np-floors").value) || 1,
-    status: "running"
+    type: npType,
+    estimatedCost: Number(document.getElementById("np-est").value) || 0,
+    otherBudget: 0, startDate: today(), endDate: "",
+    floors: Number(document.getElementById("np-floors").value) || 1,
+    status: "running",
+    saleValue: 0
   };
+  if (npType === "contract") {
+    const s = calcSqft();
+    if (!s.rate || !s.house) { toast("ரேட் + வீடு sq.ft போடவும்"); return; }
+    p.sqftRate = s.rate;
+    p.houseSqft = s.house;
+    p.stairSqft = s.stair;
+    p.stairHalf = s.stairF === 0.5;
+    p.sharedSqft = s.shared;
+    p.saleValue = s.total;
+  } else {
+    p.saleValue = Number(document.getElementById("np-sale").value) || 0;
+  }
   currentTenant().projects.push(p);
   persist();
-  ["np-name", "np-loc", "np-owner", "np-sale", "np-est", "np-floors"].forEach(id => document.getElementById(id).value = "");
-  toast("Project சேர்ந்தது");
+  ["np-name", "np-loc", "np-owner", "np-sale", "np-est", "np-rate", "np-house", "np-stair", "np-shared"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+  calcSqft();
+  toast(npType === "contract" ? "ஒப்பந்த project சேர்ந்தது" : "விற்பனை project சேர்ந்தது");
   renderHome(); renderMore();
 }
 
