@@ -480,6 +480,18 @@ function renderMoney() {
   document.getElementById("owner-list").innerHTML = pays.map(x => `
     <div class="item"><div class="row"><strong>${INR(x.amount)}</strong><span class="pill">${x.mode}</span></div>
     <div class="tiny">${x.date} · ${x.note || ""}</div></div>`).join("") || `<div class="muted">payment இல்லை</div>`;
+  renderSuppliers(pid);
+}
+function renderSuppliers(pid) {
+  const box = document.getElementById("supplier-list");
+  if (!box) return;
+  const suppliers = supplierLedger(pid);
+  box.innerHTML = suppliers.map(s => `
+    <div class="item">
+      <div class="row"><strong>${s.supplier}</strong><span class="pill ${s.balance ? "due" : "ok"}">${INR(s.balance)}</span></div>
+      <div class="tiny">வாங்கியது ${INR(s.purchase)} · கட்டியது ${INR(s.paid)}</div>
+      ${s.balance ? `<button class="btn btn-ghost" style="margin-top:8px" onclick="paySupplier('${encodeURIComponent(s.supplier)}')">பாக்கி கட்டு</button>` : ""}
+    </div>`).join("") || `<div class="muted">supplier இல்லை</div>`;
 }
 
 function saveOwnerPay() {
@@ -506,44 +518,61 @@ function renderPeople() {
     `<option value="${p.id}" ${p.id === pid ? "selected" : ""}>${p.name}</option>`).join("");
   const workers = t.workers.filter(w => w.projectId === pid);
   const days = weekDates(today());
-  const names = ["தி", "செ", "பு", "வி", "வெ", "ச", "ஞா"];
-  document.getElementById("worker-list").innerHTML = workers.map(w => {
+  const names = ["திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி", "ஞாயிறு"];
+  const sums = workers.map(w => workerSummary(w, pid));
+  const totAdv = sums.reduce((s, x) => s + x.advance, 0);
+  const totPend = sums.reduce((s, x) => s + x.payable, 0);
+  const totEarn = sums.reduce((s, x) => s + x.earned, 0);
+  const totBox = document.getElementById("worker-totals");
+  if (totBox) totBox.innerHTML = `
+    <div class="card"><div class="label">சம்பாதித்தது</div><div class="kpi">${INR(totEarn)}</div></div>
+    <div class="card"><div class="label">Advance வாங்கினார்கள்</div><div class="kpi gold">${INR(totAdv)}</div></div>
+    <div class="card"><div class="label">இன்னும் கொடுக்க</div><div class="kpi red">${INR(totPend)}</div></div>
+    <div class="card"><div class="label">ஆட்கள்</div><div class="kpi">${workers.length}</div></div>`;
+  const todayHere = workers.filter(w =>
+    t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today() && Number(a.present) > 0)
+  ).map(w => w.name);
+  const todayBanner = `<div class="item">
+    <div class="label">இன்று வந்தார்கள்</div>
+    <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "யாரும் mark பண்ணவில்லை"}</div>
+  </div>`;
+  document.getElementById("worker-list").innerHTML = todayBanner + (workers.map(w => {
     const s = workerSummary(w, pid);
+    const todayRec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today());
+    const todayVal = todayRec ? Number(todayRec.present) : 0;
+    const todayTxt = todayVal >= 1 ? "இன்று வந்தார்" : todayVal > 0 ? "இன்று அரை நாள்" : "இன்று இல்லை";
+    const todayCls = todayVal > 0 ? "yes" : "no";
     const weekHtml = days.map((dt, i) => {
       const rec = t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === dt);
       const val = rec ? Number(rec.present) : 0;
-      const cls = val >= 1 ? "on" : val > 0 ? "half" : "off";
-      const mark = val >= 1 ? "✓" : val > 0 ? "½" : "–";
-      const isToday = dt === today() ? " today" : "";
-      return `<button type="button" class="day ${cls}${isToday}" onclick="toggleAttend('${w.id}','${dt}')">
-        <span class="dname">${names[i]}</span>
-        <span class="dnum">${Number(dt.slice(8))}</span>
-        <span class="dmark">${mark}</span>
-      </button>`;
+      const tag = val >= 1 ? "வந்தார்" : val > 0 ? "அரை நாள்" : "இல்லை";
+      const cls = val >= 1 ? "yes" : val > 0 ? "half" : "no";
+      const extra = dt === today() ? " · இன்று" : "";
+      return `<div class="att-row" onclick="toggleAttend('${w.id}','${dt}')">
+        <span>${names[i]}${extra}</span>
+        <span class="att-tag ${cls}">${tag}</span>
+      </div>`;
     }).join("");
     const wageLine = w.wageType === "daily"
-      ? `நாள் கூலி ${INR(w.wage)} × ${s.days} நாள் = ${INR(s.earned)}`
-      : `வார கூலி ${INR(w.wage)} · இந்த வாரம் ${s.days} நாள்`;
+      ? `நாள் கூலி ${INR(w.wage)} × ${s.days} நாள்`
+      : `வார கூலி ${INR(w.wage)} · வந்த நாள் ${s.days}`;
     return `<div class="item">
       <div class="row"><strong>${w.name}</strong><span class="pill">${w.type}</span></div>
       <div class="tiny">${wageLine}</div>
-      <div class="week">${weekHtml}</div>
-      <div class="row"><span>Advance ${INR(s.advance)}</span><span>கொடுக்க ${INR(s.payable)}</span></div>
+      <div class="grid grid-2" style="margin:8px 0">
+        <div><div class="label">சம்பாதித்தது</div><div class="amount">${INR(s.earned)}</div></div>
+        <div><div class="label">Advance வாங்கினார்</div><div class="amount">${INR(s.advance)}</div></div>
+        <div><div class="label">கூலி கொடுத்தது</div><div class="amount">${INR(s.paid)}</div></div>
+        <div><div class="label">இன்னும் கொடுக்க</div><div class="amount" style="color:${s.payable ? "#fda4af" : "#7dd3c0"}">${INR(s.payable)}</div></div>
+      </div>
+      <button type="button" class="att-today ${todayCls}" onclick="toggleAttend('${w.id}','${today()}')">${todayTxt}</button>
+      ${weekHtml}
       <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-ghost" onclick="toggleAttend('${w.id}','${today()}')">இன்று</button>
-        <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance</button>
-        <button class="btn btn-ghost" onclick="payWorker('${w.id}','salary')">Pay</button>
+        <button class="btn btn-ghost" onclick="payWorker('${w.id}','advance')">Advance எடு</button>
+        <button class="btn btn-ghost" onclick="payWorker('${w.id}','salary')">கூலி கொடு</button>
       </div>
     </div>`;
-  }).join("") || `<div class="muted">worker இல்லை</div>`;
-
-  const suppliers = supplierLedger(pid);
-  document.getElementById("supplier-list").innerHTML = suppliers.map(s => `
-    <div class="item">
-      <div class="row"><strong>${s.supplier}</strong><span class="pill ${s.balance ? "due" : "ok"}">${INR(s.balance)}</span></div>
-      <div class="tiny">Purchase ${INR(s.purchase)} · Paid ${INR(s.paid)}</div>
-      ${s.balance ? `<button class="btn btn-ghost" style="margin-top:8px" onclick="paySupplier('${encodeURIComponent(s.supplier)}')">பாக்கி கட்டு</button>` : ""}
-    </div>`).join("") || `<div class="muted">supplier இல்லை</div>`;
+  }).join("") || `<div class="muted">worker இல்லை</div>`);
 }
 
 function markPresent(workerId) {
@@ -582,7 +611,7 @@ function paySupplier(nameEnc) {
   currentTenant().supplierPays.push({
     id: uid(), projectId: currentProjectId, supplier: name, date: today(), amount: amt, mode: "UPI", note: ""
   });
-  persist(); toast("Supplier payment save"); renderPeople();
+  persist(); toast("Supplier payment save"); renderMoney(); renderPeople();
 }
 
 function addWorker() {

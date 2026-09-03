@@ -7,7 +7,18 @@
   <title>சைட் கணக்கு</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=12" />
+  <style>
+    .att-today { width:100%; border:0; border-radius:12px; padding:12px; font-weight:700; margin:8px 0; }
+    .att-today.yes { background:#1b3a32; color:#7dd3c0; }
+    .att-today.no { background:#2a3140; color:#c5cdd8; }
+    .att-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #323a48; font-size:14px; }
+    .att-row:last-child { border-bottom:0; }
+    .att-tag { font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; }
+    .att-tag.yes { background:#1b3a32; color:#7dd3c0; }
+    .att-tag.half { background:#3a3014; color:#ffd166; }
+    .att-tag.no { background:#2a3140; color:#9aa3b2; }
+  </style>
 </head>
 <body>
   <div id="toast" class="toast"></div>
@@ -145,13 +156,17 @@
       <button class="btn btn-primary" onclick="saveOwnerPay()">Payment save</button>
       <h2>வரலாறு</h2>
       <div id="owner-list" class="list"></div>
+      <h2>Suppliers</h2>
+      <p class="tiny">Purchase vs paid. பாக்கி இங்கே கட்டவும்.</p>
+      <div id="supplier-list" class="list"></div>
     </section>
 
     <section id="page-people" class="page">
-      <h1>ஆள் + அட்டென்டன்ஸ்</h1>
-      <p class="sub">நாள் மேல் tap: வந்தார் → அரை நாள் → இல்லை. இந்த வாரம் தெரியும்.</p>
+      <h1>ஆள்</h1>
+      <p class="sub">Workers மட்டும் — சேர், அட்டென்டன்ஸ், advance, பாக்கி.</p>
       <div class="field"><label>Project</label><select id="people-project"></select></div>
-      <h2>Workers</h2>
+      <div id="worker-totals" class="grid grid-2" style="margin-bottom:12px"></div>
+      <h2>புதிய ஆள்</h2>
       <div class="card" style="margin-bottom:10px">
         <div class="field"><label>Name</label><input id="nw-name" placeholder="Ravi" /></div>
         <div class="grid grid-2">
@@ -169,8 +184,6 @@
         <button class="btn btn-primary" onclick="addWorker()">Worker சேர்</button>
       </div>
       <div id="worker-list" class="list"></div>
-      <h2>Suppliers</h2>
-      <div id="supplier-list" class="list"></div>
     </section>
 
     <section id="page-more" class="page">
@@ -234,6 +247,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=13"></script>
 </body>
 </html>
