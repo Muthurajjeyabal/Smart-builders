@@ -519,23 +519,13 @@ function renderPeople() {
   const workers = t.workers.filter(w => w.projectId === pid);
   const days = weekDates(today());
   const names = ["திங்கள்", "செவ்வாய்", "புதன்", "வியாழன்", "வெள்ளி", "சனி", "ஞாயிறு"];
-  const sums = workers.map(w => workerSummary(w, pid));
-  const totAdv = sums.reduce((s, x) => s + x.advance, 0);
-  const totPend = sums.reduce((s, x) => s + x.payable, 0);
-  const totEarn = sums.reduce((s, x) => s + x.earned, 0);
-  const totBox = document.getElementById("worker-totals");
-  if (totBox) totBox.innerHTML = `
-    <div class="card"><div class="label">சம்பாதித்தது</div><div class="kpi">${INR(totEarn)}</div></div>
-    <div class="card"><div class="label">Advance வாங்கினார்கள்</div><div class="kpi gold">${INR(totAdv)}</div></div>
-    <div class="card"><div class="label">இன்னும் கொடுக்க</div><div class="kpi red">${INR(totPend)}</div></div>
-    <div class="card"><div class="label">ஆட்கள்</div><div class="kpi">${workers.length}</div></div>`;
   const todayHere = workers.filter(w =>
     t.attendance.find(a => a.workerId === w.id && a.projectId === pid && a.date === today() && Number(a.present) > 0)
   ).map(w => w.name);
   const todayBanner = `<div class="item">
     <div class="label">இன்று வந்தார்கள் (${todayHere.length}/${workers.length})</div>
     <div style="font-weight:700;margin-top:4px">${todayHere.length ? todayHere.join(", ") : "யாரும் mark பண்ணவில்லை"}</div>
-    <div class="tiny" style="margin-top:6px">பட்டியலில் இன்று tap = வந்தார். பெயர் tap = முழு கணக்கு.</div>
+    <div class="tiny" style="margin-top:6px">வலது = இன்று. பெயர் = கணக்கு.</div>
   </div>`;
   document.getElementById("worker-list").innerHTML = todayBanner + (workers.map(w => {
     const s = workerSummary(w, pid);

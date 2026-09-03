@@ -165,9 +165,8 @@
       <h1>ஆள்</h1>
       <p class="sub">20 பேர் ஒரு பட்டியல். வலது = இன்று. பெயர் = அட்டென்டன்ஸ் + கூலி.</p>
       <div class="field"><label>Project</label><select id="people-project"></select></div>
-      <div id="worker-totals" class="grid grid-2" style="margin-bottom:12px"></div>
-      <h2>புதிய ஆள்</h2>
-      <div class="card" style="margin-bottom:10px">
+      <button class="btn btn-ghost" style="margin-bottom:10px" onclick="document.getElementById('nw-box').classList.toggle('hidden')">+ ஆள் சேர்</button>
+      <div id="nw-box" class="card hidden" style="margin-bottom:10px">
         <div class="field"><label>Name</label><input id="nw-name" placeholder="Ravi" /></div>
         <div class="grid grid-2">
           <div class="field"><label>Type</label>
@@ -247,6 +246,6 @@
       <button data-page="page-more"><span class="ico">☰</span>மேலும்</button>
     </nav>
   </div>
-  <script src="app.js?v=15"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
